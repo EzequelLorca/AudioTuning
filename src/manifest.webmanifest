@@ -1,0 +1,16 @@
+{
+  "name": "AudioTuning - Otra Dimensión",
+  "short_name": "AudioTuning",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0d061f",
+  "theme_color": "#150933",
+  "icons": [
+    {
+      "src": "assets/icon/logo-audiotuning.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

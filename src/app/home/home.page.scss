@@ -1,0 +1,726 @@
+/* =========================================================
+   AudioTuning - Home
+   ========================================================= */
+
+$verde:        #00ff66;
+$morado:       #7b2cbf;
+$morado-claro: #c77dff;
+$fondo:        #0d061f;
+$superficie:   #150933;
+$campo:        #221250;
+$texto:        #ffffff;
+$texto-suave:  #b9b3cc;
+$amarillo:     #ffd166;
+$cian:         #3dd6ff;
+$rojo:         #ff4961;
+
+ion-content {
+  --background: #{$fondo};
+}
+
+ion-button {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+/* =========================================================
+   HEADER NEÓN
+   ========================================================= */
+.toolbar-marca {
+  --background: linear-gradient(180deg, #8e2fd0 0%, #{$morado} 100%);
+  --min-height: 68px;
+  border-bottom: 1px solid rgba($verde, 0.35);
+  box-shadow: 0 4px 18px rgba($morado, 0.55);
+}
+
+.marca {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0 8px;
+  line-height: 1;
+}
+
+.marca-logo {
+  margin: 0;
+  font-family: 'Arial Black', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 28px;
+  letter-spacing: 2px;
+}
+
+.marca-audio {
+  color: $texto;
+  text-shadow:
+    0 0 3px $texto,
+    0 0 10px $morado-claro,
+    0 0 22px $morado;
+}
+
+.marca-tuning {
+  color: $verde;
+  text-shadow:
+    0 0 3px #b6ffd2,
+    0 0 8px $verde,
+    0 0 18px $verde,
+    0 0 36px rgba($verde, 0.7),
+    0 0 60px rgba($verde, 0.4);
+  animation: neon-encendido 1.4s ease-out 1;
+
+  &.sin-animacion { animation: none; }
+}
+
+.marca-sub {
+  margin-top: 5px;
+  padding-left: 6px;
+  color: $verde;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  text-shadow: 0 0 6px rgba($verde, 0.85);
+}
+
+@keyframes neon-encendido {
+  0%            { opacity: 0; }
+  18%, 22%, 25% { opacity: 1; }
+  20%, 24%      { opacity: 0.25; text-shadow: none; }
+  53%, 57%      { opacity: 1; }
+  55%           { opacity: 0.3; text-shadow: none; }
+  100%          { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marca-tuning { animation: none; }
+}
+
+/* =========================================================
+   PESTAÑAS
+   ========================================================= */
+.barra-segment {
+  --background: #{$fondo};
+  padding: 6px 12px 0;
+
+  ion-segment-button {
+    --color: #{$texto-suave};
+    --color-checked: #{$verde};
+    --indicator-color: #{$verde};
+    text-transform: none;
+    font-size: 15px;
+    min-height: 44px;
+  }
+
+  .contador {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    background: $morado;
+    color: $texto;
+    font-size: 12px;
+  }
+}
+
+/* =========================================================
+   FORMULARIO
+   ========================================================= */
+.formulario,
+.historial {
+  max-width: 560px;
+  margin: 0 auto;
+  padding-bottom: 16px;
+}
+
+.bloque {
+  background: $superficie;
+  border: 1px solid rgba($morado, 0.6);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.bloque-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  color: $verde;
+  font-size: 17px;
+  font-weight: 700;
+
+  ion-icon { font-size: 20px; }
+
+  .bloque-extra {
+    margin-left: auto;
+    color: $texto;
+    font-size: 14px;
+    font-weight: 600;
+  }
+}
+
+.lista-campos {
+  background: transparent;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &.espacio-arriba { margin-top: 12px; }
+}
+
+.bloque ion-item,
+.zona-edicion ion-item {
+  --background: #{$campo};
+  --color: #{$texto};
+  --border-radius: 10px;
+  --padding-start: 12px;
+  --inner-padding-end: 12px;
+  --highlight-color-focused: #{$verde};
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: border-color 0.15s;
+
+  &.item-has-focus { border-color: $verde; }
+  &.campo-error    { border-color: $rojo; }
+}
+
+ion-input, ion-textarea, ion-select {
+  --placeholder-color: #{$texto-suave};
+  --placeholder-opacity: 0.7;
+}
+
+.error-campo {
+  margin: 4px 0 0 4px;
+  color: $rojo;
+  font-size: 12px;
+}
+
+.fila-doble {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 10px;
+}
+
+.input-patente {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ---------- Repuestos ---------- */
+.repuestos-lista {
+  margin-bottom: 10px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba($morado, 0.5);
+}
+
+.repuesto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 4px 12px;
+  background: $fondo;
+
+  & + & { border-top: 1px solid rgba($morado, 0.35); }
+
+  .repuesto-nombre { flex: 1; color: $texto; }
+  .repuesto-costo  { color: $verde; font-weight: 600; }
+}
+
+.texto-vacio {
+  margin: 0 0 10px;
+  color: $texto-suave;
+  font-size: 14px;
+}
+
+.agregar-repuesto {
+  display: grid;
+  grid-template-columns: 1fr 100px auto;
+  gap: 8px;
+  align-items: center;
+
+  ion-item {
+    --background: #{$campo};
+    --color: #{$texto};
+    --border-radius: 10px;
+    border-radius: 10px;
+  }
+
+  .boton-agregar {
+    margin: 0;
+    height: 48px;
+    --border-radius: 10px;
+  }
+}
+
+/* ---------- Foto ---------- */
+.foto-zona {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 22px;
+  border: 2px dashed rgba($verde, 0.6);
+  border-radius: 12px;
+  color: $verde;
+  cursor: pointer;
+
+  ion-icon { font-size: 30px; }
+  &:active { background: rgba($verde, 0.08); }
+
+  &.procesando {
+    cursor: default;
+    color: $texto-suave;
+    border-color: rgba($morado, 0.6);
+  }
+}
+
+.foto-preview {
+  margin-top: 10px;
+
+  img {
+    display: block;
+    width: 100%;
+    max-height: 220px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid $verde;
+  }
+}
+
+/* =========================================================
+   FOOTER CON TOTAL
+   ========================================================= */
+.footer-total ion-toolbar {
+  --background: #{$superficie};
+  --border-color: #{$verde};
+  border-top: 1px solid $verde;
+  padding: 6px 12px;
+}
+
+.footer-contenido {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 560px;
+  margin: 0 auto;
+
+  ion-button {
+    margin: 0;
+    min-width: 110px;
+    height: 46px;
+    --border-radius: 10px;
+  }
+}
+
+.footer-montos {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.footer-label   { color: $texto-suave; font-size: 12px; }
+.footer-valor   { color: $verde; font-size: 24px; text-shadow: 0 0 10px rgba($verde, 0.5); }
+.footer-detalle { color: $texto-suave; font-size: 11px; }
+
+/* =========================================================
+   RESUMEN DEL MES
+   ========================================================= */
+.resumen {
+  margin-bottom: 12px;
+  padding: 14px;
+  background: $superficie;
+  border: 1px solid rgba($verde, 0.5);
+  border-radius: 14px;
+  box-shadow: 0 0 16px rgba($verde, 0.12);
+}
+
+.resumen-titulo {
+  margin: 0 0 10px;
+  color: $verde;
+  font-weight: 700;
+
+  &::first-letter { text-transform: uppercase; }
+}
+
+.resumen-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.resumen-dato {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  background: $fondo;
+  border-radius: 10px;
+}
+
+.resumen-valor {
+  color: $texto;
+  font-size: 18px;
+  font-weight: 800;
+
+  &.verde    { color: $verde; }
+  &.amarillo { color: $amarillo; }
+}
+
+.resumen-label {
+  color: $texto-suave;
+  font-size: 12px;
+}
+
+.resumen-top {
+  margin: 10px 0 0;
+  color: $texto-suave;
+  font-size: 13px;
+
+  strong { color: $texto; }
+}
+
+/* =========================================================
+   HISTORIAL
+   ========================================================= */
+.buscador {
+  --background: #{$campo};
+  --color: #{$texto};
+  --placeholder-color: #{$texto-suave};
+  --icon-color: #{$verde};
+  --border-radius: 10px;
+  padding: 0 0 6px;
+}
+
+.filtros-estado {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.chip-filtro {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba($morado, 0.8);
+  background: $superficie;
+  color: $texto-suave;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  .chip-num {
+    margin-left: 4px;
+    opacity: 0.7;
+  }
+
+  &.activo {
+    color: $fondo;
+    background: $verde;
+    border-color: $verde;
+    box-shadow: 0 0 10px rgba($verde, 0.5);
+  }
+
+  &.chip-pendiente.activo  { background: $amarillo; border-color: $amarillo; box-shadow: 0 0 10px rgba($amarillo, 0.5); }
+  &.chip-en-proceso.activo { background: $morado-claro; border-color: $morado-claro; box-shadow: 0 0 10px rgba($morado-claro, 0.5); }
+  &.chip-terminado.activo  { background: $cian; border-color: $cian; box-shadow: 0 0 10px rgba($cian, 0.5); }
+}
+
+.tarjeta-trabajo {
+  margin: 0 0 14px;
+  background: $superficie;
+  border: 1px solid rgba($morado, 0.7);
+  border-radius: 14px;
+  box-shadow: none;
+}
+
+.tarjeta-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px 0;
+}
+
+.tarjeta-auto {
+  margin: 0;
+  color: $verde;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.tarjeta-ano {
+  color: $texto-suave;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.tarjeta-fecha {
+  margin: 2px 0 0;
+  color: $texto-suave;
+  font-size: 13px;
+}
+
+.tarjeta-estado {
+  padding: 10px 16px 0;
+}
+
+/* ---------- Estados (colores) ---------- */
+.select-estado,
+.chip-estado {
+  display: inline-flex;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid currentColor;
+}
+
+.select-estado {
+  --padding-start: 12px;
+  --padding-end: 8px;
+  --padding-top: 4px;
+  --padding-bottom: 4px;
+  min-height: 30px;
+  width: auto;
+  max-width: 170px;
+
+  &::part(icon) {
+    color: currentColor;
+    opacity: 1;
+  }
+}
+
+.chip-estado { padding: 3px 12px; }
+
+.estado-pendiente  { color: $amarillo;     background: rgba($amarillo, 0.12); }
+.estado-en-proceso { color: $morado-claro; background: rgba($morado-claro, 0.14); }
+.estado-terminado  { color: $cian;         background: rgba($cian, 0.12); }
+.estado-pagado     { color: $verde;        background: rgba($verde, 0.12); }
+
+/* Patente estilo placa chilena */
+.patente {
+  flex-shrink: 0;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: $texto;
+  color: #111;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: 2px solid #111;
+  outline: 1px solid $texto;
+}
+
+.dato {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+
+  .dato-label { color: $texto-suave; font-size: 14px; }
+  .dato-valor { color: $texto; font-weight: 600; text-align: right; }
+}
+
+.detalle {
+  margin: 6px 0;
+  padding: 8px 10px;
+  border-left: 3px solid $morado;
+  background: rgba($morado, 0.12);
+  color: $texto;
+  border-radius: 0 8px 8px 0;
+}
+
+.desglose {
+  margin: 12px 0;
+  padding: 10px 12px;
+  background: $fondo;
+  border-radius: 10px;
+}
+
+.desglose-fila {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  color: $texto-suave;
+  font-size: 14px;
+}
+
+.desglose-total {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba($verde, 0.5);
+  color: $verde;
+  font-size: 18px;
+  font-weight: 700;
+
+  &.edicion-total {
+    margin: 12px 0 4px;
+  }
+}
+
+.tarjeta-foto {
+  display: block;
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid $morado;
+  margin: 12px 0;
+}
+
+.botones-dobles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+
+  ion-button { margin: 0; --border-radius: 10px; }
+}
+
+.acciones-secundarias {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+/* ---------- Edición ---------- */
+.zona-edicion {
+  padding: 12px;
+  border: 1px solid $verde;
+  border-radius: 10px;
+  background: $fondo;
+
+  .zona-edicion-titulo {
+    margin: 0 0 10px;
+    color: $verde;
+    font-weight: 700;
+  }
+
+  .sub-titulo {
+    margin: 14px 0 8px;
+    color: $verde;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .repuesto { background: $superficie; }
+}
+
+.estado-vacio {
+  text-align: center;
+  padding: 40px 16px;
+  color: $texto-suave;
+
+  ion-icon { font-size: 44px; color: $morado; }
+  p { margin: 8px 0 14px; }
+}
+
+/* =========================================================
+   VISTA PARA EL CLIENTE
+   ========================================================= */
+.overlay-cliente {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 20px 14px;
+  background: rgba($fondo, 0.96);
+}
+
+.presupuesto-oficial {
+  position: relative;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 22px 18px 18px;
+  background: $superficie;
+  border: 2px solid $verde;
+  border-radius: 16px;
+  box-shadow: 0 0 24px rgba($verde, 0.25);
+}
+
+.cerrar-x {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+
+.oficial-marca {
+  text-align: center;
+  padding-bottom: 14px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid $morado;
+
+  .marca-logo { font-size: 26px; }
+
+  p {
+    margin: 6px 0 0;
+    color: $texto;
+    font-size: 13px;
+  }
+}
+
+.oficial-servicio {
+  margin: 12px 0;
+
+  .oficial-servicio-nombre {
+    margin: 0 0 6px;
+    color: $texto;
+    font-size: 17px;
+    font-weight: 700;
+  }
+}
+
+.oficial-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 14px 0;
+  padding: 14px 16px;
+  background: $fondo;
+  border: 1px solid $verde;
+  border-radius: 12px;
+  color: $texto;
+
+  strong {
+    color: $verde;
+    font-size: 28px;
+    text-shadow: 0 0 12px rgba($verde, 0.5);
+  }
+}
+/* ===== Avisos y alertas AudioTuning ===== */
+ion-toast.toast-neon {
+  --border-radius: 12px;
+  --box-shadow: 0 0 18px rgba(0, 255, 102, 0.35);
+  font-weight: 600;
+}
+
+ion-alert.alerta-neon {
+  --background: #150933;
+
+  .alert-wrapper {
+    border: 1px solid #7b2cbf;
+    border-radius: 14px;
+    box-shadow: 0 0 20px rgba(123, 44, 191, 0.5);
+  }
+
+  .alert-title   { color: #00ff66; }
+  .alert-message { color: #d6d0e6; }
+  .alert-button  { color: #00ff66; }
+  .alert-button-role-destructive { color: #ff4961; }
+}
+
+ion-popover {
+  --background: #150933;
+
+  ion-item { --background: #150933; --color: #ffffff; }
+}

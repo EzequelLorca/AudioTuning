@@ -1,0 +1,519 @@
+<ion-header [translucent]="true">
+  <!-- Logo neón -->
+  <ion-toolbar class="toolbar-marca">
+    <div class="marca">
+      <h1 class="marca-logo">
+        <span class="marca-audio">AUDIO</span><span class="marca-tuning">TUNING</span>
+      </h1>
+      <span class="marca-sub">OTRA DIMENSIÓN</span>
+    </div>
+  </ion-toolbar>
+
+  <!-- Pestañas -->
+  <ion-toolbar class="barra-segment">
+    <ion-segment [(ngModel)]="seccion" value="nuevo">
+      <ion-segment-button value="nuevo">
+        <ion-label>Nuevo</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="historial">
+        <ion-label>Historial <span class="contador" *ngIf="historial.length > 0">{{ historial.length }}</span></ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <!-- ===================== NUEVO PRESUPUESTO ===================== -->
+  <div *ngIf="seccion === 'nuevo'" class="formulario">
+
+    <!-- CLIENTE -->
+    <section class="bloque">
+      <h2 class="bloque-titulo"><ion-icon name="person-outline"></ion-icon> Cliente</h2>
+      <ion-list lines="none" class="lista-campos">
+        <ion-item>
+          <ion-input label="Nombre" labelPlacement="stacked" [(ngModel)]="trabajoActual.nombreCliente" placeholder="Ej: Juan Pérez"></ion-input>
+        </ion-item>
+        <div>
+          <ion-item [class.campo-error]="!!errores['telefono']">
+            <ion-input label="WhatsApp" labelPlacement="stacked" type="tel" inputmode="tel"
+              [(ngModel)]="trabajoActual.telefonoCliente" (ionInput)="limpiarError('telefono')"
+              placeholder="56912345678"></ion-input>
+          </ion-item>
+          <p class="error-campo" *ngIf="errores['telefono']">{{ errores['telefono'] }}</p>
+        </div>
+      </ion-list>
+    </section>
+
+    <!-- VEHÍCULO -->
+    <section class="bloque">
+      <h2 class="bloque-titulo"><ion-icon name="car-sport-outline"></ion-icon> Vehículo</h2>
+      <ion-list lines="none" class="lista-campos">
+        <div>
+          <ion-item [class.campo-error]="!!errores['marca']">
+            <ion-select label="Marca" labelPlacement="stacked" interface="action-sheet"
+              [(ngModel)]="trabajoActual.marcaAuto" (ionChange)="onCambiarMarca()" placeholder="Selecciona una marca">
+              <ion-select-option *ngFor="let marca of catalogoAutos" [value]="marca.nombre">{{ marca.nombre }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <p class="error-campo" *ngIf="errores['marca']">{{ errores['marca'] }}</p>
+        </div>
+
+        <div>
+          <ion-item [class.campo-error]="!!errores['modelo']">
+            <ion-select label="Modelo" labelPlacement="stacked" interface="action-sheet"
+              [(ngModel)]="trabajoActual.modeloAuto" (ionChange)="limpiarError('modelo')"
+              [disabled]="!trabajoActual.marcaAuto"
+              [placeholder]="trabajoActual.marcaAuto ? 'Selecciona el modelo' : 'Elige primero la marca'">
+              <ion-select-option *ngFor="let mod of modelosDisponibles" [value]="mod">{{ mod }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <p class="error-campo" *ngIf="errores['modelo']">{{ errores['modelo'] }}</p>
+        </div>
+
+        <div class="fila-doble">
+          <div>
+            <ion-item [class.campo-error]="!!errores['ano']">
+              <ion-input label="Año" labelPlacement="stacked" type="number" inputmode="numeric"
+                [(ngModel)]="trabajoActual.anoAuto" (ionInput)="limpiarError('ano')" placeholder="2018"></ion-input>
+            </ion-item>
+            <p class="error-campo" *ngIf="errores['ano']">{{ errores['ano'] }}</p>
+          </div>
+          <div>
+            <ion-item [class.campo-error]="!!errores['patente']">
+              <ion-input label="Patente" labelPlacement="stacked" class="input-patente"
+                [(ngModel)]="trabajoActual.patenteCliente" (ionInput)="limpiarError('patente')" placeholder="BB-CL-12"></ion-input>
+            </ion-item>
+            <p class="error-campo" *ngIf="errores['patente']">{{ errores['patente'] }}</p>
+          </div>
+        </div>
+      </ion-list>
+    </section>
+
+    <!-- SERVICIO -->
+    <section class="bloque">
+      <h2 class="bloque-titulo"><ion-icon name="construct-outline"></ion-icon> Servicio</h2>
+      <ion-list lines="none" class="lista-campos">
+        <div>
+          <ion-item [class.campo-error]="!!errores['servicio']">
+            <ion-select label="Tipo de servicio" labelPlacement="stacked" interface="action-sheet"
+              [(ngModel)]="trabajoActual.servicioSeleccionado" (ionChange)="limpiarError('servicio')" placeholder="Selecciona servicio">
+              <ion-select-option *ngFor="let serv of serviciosLogo" [value]="serv">{{ serv }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <p class="error-campo" *ngIf="errores['servicio']">{{ errores['servicio'] }}</p>
+        </div>
+
+        <!-- Lo ve el cliente -->
+        <ion-item>
+          <ion-textarea label="Detalle para el cliente" labelPlacement="stacked" [autoGrow]="true" rows="2"
+            [(ngModel)]="trabajoActual.descripcionServicio"
+            placeholder="Ej: Instalación de parlantes y revisión de cableado"
+            helperText="Lo verá el cliente en el presupuesto y en WhatsApp"></ion-textarea>
+        </ion-item>
+
+        <!-- Solo lo ve el mecánico -->
+        <ion-item class="item-interno">
+          <ion-textarea label="🔒 Nota interna (solo taller)" labelPlacement="stacked" [autoGrow]="true" rows="2"
+            [(ngModel)]="trabajoActual.notaInterna"
+            placeholder="Ej: Cliente pidió descuento, revisar fusible 15A, cobrar diagnóstico aparte"
+            helperText="Nunca se muestra al cliente"></ion-textarea>
+        </ion-item>
+      </ion-list>
+    </section>
+
+    <!-- REPUESTOS -->
+    <section class="bloque">
+      <h2 class="bloque-titulo">
+        <ion-icon name="cube-outline"></ion-icon> Repuestos
+        <span class="bloque-extra" *ngIf="trabajoActual.repuestos.length > 0">{{ clp(totalRepuestos) }}</span>
+      </h2>
+
+      <div class="repuestos-lista" *ngIf="trabajoActual.repuestos.length > 0; else sinRepuestos">
+        <div class="repuesto" *ngFor="let rep of trabajoActual.repuestos; let i = index">
+          <span class="repuesto-nombre">{{ rep.nombre }}</span>
+          <span class="repuesto-costo">{{ clp(rep.costo) }}</span>
+          <ion-button fill="clear" color="danger" size="small" (click)="eliminarRepuesto(i)" aria-label="Quitar repuesto">
+            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+      <ng-template #sinRepuestos>
+        <p class="texto-vacio">Aún no agregas repuestos. Si el trabajo no los usa, puedes dejarlo así.</p>
+      </ng-template>
+
+      <div class="agregar-repuesto">
+        <ion-item>
+          <ion-input [(ngModel)]="nuevoRepuestoNombre" placeholder="Repuesto" aria-label="Nombre del repuesto"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-input type="number" inputmode="numeric" [(ngModel)]="nuevoRepuestoCosto" placeholder="$ Costo" aria-label="Costo del repuesto"></ion-input>
+        </ion-item>
+        <ion-button class="boton-agregar" color="secondary" (click)="agregarRepuesto()" aria-label="Agregar repuesto">
+          <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </section>
+
+    <!-- MANO DE OBRA Y FOTO -->
+    <section class="bloque">
+      <h2 class="bloque-titulo"><ion-icon name="cash-outline"></ion-icon> Mano de obra y evidencia</h2>
+      <ion-list lines="none" class="lista-campos">
+        <ion-item>
+          <ion-input type="number" inputmode="numeric" label="Mano de obra ($)" labelPlacement="stacked"
+            [(ngModel)]="trabajoActual.costoManoObra" (ionInput)="calcularTotal()"></ion-input>
+        </ion-item>
+      </ion-list>
+
+      <input #inputFoto type="file" accept="image/*" hidden (change)="onFileSelected($event)">
+
+      <div class="foto-zona" *ngIf="!trabajoActual.fotoTrabajo && !procesandoFoto" (click)="inputFoto.click()">
+        <ion-icon name="camera-outline"></ion-icon>
+        <span>Agregar foto del trabajo</span>
+      </div>
+
+      <div class="foto-zona procesando" *ngIf="procesandoFoto">
+        <span>Procesando foto…</span>
+      </div>
+
+      <div class="foto-preview" *ngIf="trabajoActual.fotoTrabajo && !procesandoFoto">
+        <img [src]="trabajoActual.fotoTrabajo" alt="Foto del trabajo">
+        <div class="botones-dobles">
+          <ion-button size="small" fill="outline" color="secondary" (click)="inputFoto.click()">
+            <ion-icon slot="start" name="camera-outline"></ion-icon> Cambiar
+          </ion-button>
+          <ion-button size="small" fill="outline" color="danger" (click)="quitarFoto()">
+            <ion-icon slot="start" name="trash-outline"></ion-icon> Quitar
+          </ion-button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ===================== HISTORIAL ===================== -->
+  <div *ngIf="seccion === 'historial'" class="historial">
+
+    <!-- Resumen del mes -->
+    <section class="resumen" *ngIf="resumenMes as r">
+      <p class="resumen-titulo">Resumen de {{ r.nombreMes }}</p>
+      <div class="resumen-grid">
+        <div class="resumen-dato">
+          <span class="resumen-valor">{{ r.cantidad }}</span>
+          <span class="resumen-label">Trabajos</span>
+        </div>
+        <div class="resumen-dato">
+          <span class="resumen-valor">{{ clp(r.presupuestado) }}</span>
+          <span class="resumen-label">Presupuestado</span>
+        </div>
+        <div class="resumen-dato">
+          <span class="resumen-valor verde">{{ clp(r.pagado) }}</span>
+          <span class="resumen-label">Pagado</span>
+        </div>
+        <div class="resumen-dato">
+          <span class="resumen-valor amarillo">{{ clp(r.porCobrar) }}</span>
+          <span class="resumen-label">Por cobrar</span>
+        </div>
+      </div>
+      <p class="resumen-top" *ngIf="r.cantidad > 0">Servicio más pedido: <strong>{{ r.servicioTop }}</strong></p>
+    </section>
+
+    <ion-searchbar class="buscador" [(ngModel)]="filtroTexto" placeholder="Cliente, auto, patente o nota"></ion-searchbar>
+
+    <!-- Filtro por estado -->
+    <div class="filtros-estado">
+      <button type="button" class="chip-filtro" [class.activo]="filtroEstado === 'todos'" (click)="filtroEstado = 'todos'">
+        Todos <span class="chip-num">{{ historial.length }}</span>
+      </button>
+      <button type="button" *ngFor="let e of estados" class="chip-filtro" [ngClass]="'chip-' + e.valor"
+        [class.activo]="filtroEstado === e.valor" (click)="filtroEstado = e.valor">
+        {{ e.texto }} <span class="chip-num">{{ contarEstado(e.valor) }}</span>
+      </button>
+    </div>
+
+    <ion-card class="tarjeta-trabajo" *ngFor="let item of historialFiltrado(); trackBy: trackById">
+
+      <div class="tarjeta-cabecera">
+        <div>
+          <h2 class="tarjeta-auto">
+            {{ item.marcaAuto }} {{ item.modeloAuto }}
+            <span class="tarjeta-ano" *ngIf="item.anoAuto">{{ item.anoAuto }}</span>
+          </h2>
+          <p class="tarjeta-fecha">{{ item.fecha }}</p>
+        </div>
+        <span class="patente">{{ item.patenteCliente || 'Sin patente' }}</span>
+      </div>
+
+      <!-- Estado editable -->
+      <div class="tarjeta-estado" *ngIf="editandoId !== item.id">
+        <ion-select class="select-estado" [ngClass]="'estado-' + (item.estado || 'pendiente')"
+          interface="popover" aria-label="Estado del trabajo"
+          [(ngModel)]="item.estado" (ionChange)="onCambiarEstado(item)">
+          <ion-select-option *ngFor="let e of estados" [value]="e.valor">{{ e.texto }}</ion-select-option>
+        </ion-select>
+      </div>
+
+      <ion-card-content>
+
+        <!-- MODO LECTURA -->
+        <div *ngIf="editandoId !== item.id">
+          <div class="dato">
+            <span class="dato-label">Cliente</span>
+            <span class="dato-valor">{{ item.nombreCliente || 'General' }}</span>
+          </div>
+          <div class="dato">
+            <span class="dato-label">Servicio</span>
+            <span class="dato-valor">{{ item.servicioSeleccionado || '—' }}</span>
+          </div>
+
+          <!-- Detalle para el cliente -->
+          <p class="detalle" *ngIf="item.descripcionServicio">{{ item.descripcionServicio }}</p>
+
+          <!-- Nota interna (solo taller) -->
+          <div class="nota-interna" *ngIf="item.notaInterna">
+            <span class="nota-interna-titulo">🔒 Nota interna</span>
+            <p>{{ item.notaInterna }}</p>
+          </div>
+
+          <div class="desglose">
+            <div class="desglose-fila" *ngFor="let r of item.repuestos">
+              <span>{{ r.nombre }}</span>
+              <span>{{ clp(r.costo) }}</span>
+            </div>
+            <div class="desglose-fila">
+              <span>Mano de obra</span>
+              <span>{{ clp(item.costoManoObra) }}</span>
+            </div>
+            <div class="desglose-total">
+              <span>Total</span>
+              <span>{{ clp(item.totalCobrado) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODO EDICIÓN COMPLETA -->
+        <div class="zona-edicion" *ngIf="editandoId === item.id && copiaEdicion">
+          <p class="zona-edicion-titulo">Editando presupuesto</p>
+
+          <ion-list lines="none" class="lista-campos">
+            <ion-item>
+              <ion-input label="Cliente" labelPlacement="stacked" [(ngModel)]="copiaEdicion.nombreCliente"></ion-input>
+            </ion-item>
+
+            <div>
+              <ion-item [class.campo-error]="!!erroresEdicion['telefono']">
+                <ion-input label="WhatsApp" labelPlacement="stacked" type="tel" inputmode="tel"
+                  [(ngModel)]="copiaEdicion.telefonoCliente" (ionInput)="limpiarErrorEdicion('telefono')"></ion-input>
+              </ion-item>
+              <p class="error-campo" *ngIf="erroresEdicion['telefono']">{{ erroresEdicion['telefono'] }}</p>
+            </div>
+
+            <div>
+              <ion-item [class.campo-error]="!!erroresEdicion['patente']">
+                <ion-input label="Patente" labelPlacement="stacked" class="input-patente"
+                  [(ngModel)]="copiaEdicion.patenteCliente" (ionInput)="limpiarErrorEdicion('patente')"></ion-input>
+              </ion-item>
+              <p class="error-campo" *ngIf="erroresEdicion['patente']">{{ erroresEdicion['patente'] }}</p>
+            </div>
+
+            <div>
+              <ion-item [class.campo-error]="!!erroresEdicion['servicio']">
+                <ion-select label="Servicio" labelPlacement="stacked" interface="action-sheet"
+                  [(ngModel)]="copiaEdicion.servicioSeleccionado" (ionChange)="limpiarErrorEdicion('servicio')">
+                  <ion-select-option *ngFor="let serv of serviciosLogo" [value]="serv">{{ serv }}</ion-select-option>
+                </ion-select>
+              </ion-item>
+              <p class="error-campo" *ngIf="erroresEdicion['servicio']">{{ erroresEdicion['servicio'] }}</p>
+            </div>
+
+            <ion-item>
+              <ion-textarea label="Detalle para el cliente" labelPlacement="stacked" [autoGrow]="true" rows="2"
+                [(ngModel)]="copiaEdicion.descripcionServicio"></ion-textarea>
+            </ion-item>
+
+            <ion-item class="item-interno">
+              <ion-textarea label="🔒 Nota interna (solo taller)" labelPlacement="stacked" [autoGrow]="true" rows="2"
+                [(ngModel)]="copiaEdicion.notaInterna"></ion-textarea>
+            </ion-item>
+
+            <ion-item>
+              <ion-select label="Estado" labelPlacement="stacked" interface="popover" [(ngModel)]="copiaEdicion.estado">
+                <ion-select-option *ngFor="let e of estados" [value]="e.valor">{{ e.texto }}</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-list>
+
+          <!-- Repuestos en edición -->
+          <p class="sub-titulo">Repuestos</p>
+          <div class="repuestos-lista" *ngIf="copiaEdicion.repuestos.length > 0; else sinRepEdicion">
+            <div class="repuesto" *ngFor="let rep of copiaEdicion.repuestos; let i = index">
+              <span class="repuesto-nombre">{{ rep.nombre }}</span>
+              <span class="repuesto-costo">{{ clp(rep.costo) }}</span>
+              <ion-button fill="clear" color="danger" size="small" (click)="eliminarRepuestoEdicion(i)" aria-label="Quitar repuesto">
+                <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+          <ng-template #sinRepEdicion>
+            <p class="texto-vacio">Sin repuestos.</p>
+          </ng-template>
+
+          <div class="agregar-repuesto">
+            <ion-item>
+              <ion-input [(ngModel)]="editRepNombre" placeholder="Repuesto" aria-label="Nombre del repuesto"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-input type="number" inputmode="numeric" [(ngModel)]="editRepCosto" placeholder="$ Costo" aria-label="Costo del repuesto"></ion-input>
+            </ion-item>
+            <ion-button class="boton-agregar" color="secondary" (click)="agregarRepuestoEdicion()" aria-label="Agregar repuesto">
+              <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+            </ion-button>
+          </div>
+
+          <ion-list lines="none" class="lista-campos espacio-arriba">
+            <ion-item>
+              <ion-input label="Mano de obra ($)" type="number" inputmode="numeric" labelPlacement="stacked"
+                [(ngModel)]="copiaEdicion.costoManoObra"></ion-input>
+            </ion-item>
+          </ion-list>
+
+          <div class="desglose-total edicion-total">
+            <span>Nuevo total</span>
+            <span>{{ clp(totalEdicion()) }}</span>
+          </div>
+
+          <div class="botones-dobles">
+            <ion-button expand="block" color="success" (click)="guardarEdicion(item)">
+              <ion-icon name="checkmark-outline" slot="start"></ion-icon> Guardar cambios
+            </ion-button>
+            <ion-button expand="block" color="medium" fill="outline" (click)="cancelarEdicion()">
+              Cancelar
+            </ion-button>
+          </div>
+        </div>
+
+        <img class="tarjeta-foto" *ngIf="item.fotoTrabajo" [src]="item.fotoTrabajo" alt="Foto del trabajo">
+
+        <ng-container *ngIf="editandoId !== item.id">
+          <div class="botones-dobles">
+            <ion-button expand="block" color="secondary" (click)="verPresentacionCliente(item)">
+              <ion-icon name="eye-outline" slot="start"></ion-icon> Ver cliente
+            </ion-button>
+            <ion-button expand="block" color="success" (click)="enviarWhatsApp(item)">
+              <ion-icon name="logo-whatsapp" slot="start"></ion-icon> WhatsApp
+            </ion-button>
+          </div>
+
+          <div class="acciones-secundarias">
+            <ion-button fill="clear" color="warning" size="small" (click)="activarEdicion(item)">
+              <ion-icon name="create-outline" slot="start"></ion-icon> Editar
+            </ion-button>
+            <ion-button fill="clear" color="danger" size="small" (click)="eliminarRegistro(item)">
+              <ion-icon name="trash-outline" slot="start"></ion-icon> Eliminar
+            </ion-button>
+          </div>
+        </ng-container>
+
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Estados vacíos -->
+    <div class="estado-vacio" *ngIf="historial.length === 0">
+      <ion-icon name="document-text-outline"></ion-icon>
+      <p>No hay presupuestos guardados.</p>
+      <ion-button fill="outline" color="secondary" (click)="seccion = 'nuevo'">Crear el primero</ion-button>
+    </div>
+    <div class="estado-vacio" *ngIf="historial.length > 0 && historialFiltrado().length === 0">
+      <ion-icon name="search-outline"></ion-icon>
+      <p>Ningún presupuesto coincide con la búsqueda o el filtro.</p>
+      <ion-button fill="outline" color="secondary" (click)="filtroTexto = ''; filtroEstado = 'todos'">Ver todos</ion-button>
+    </div>
+  </div>
+
+  <!-- ===================== VISTA PARA EL CLIENTE (sin nota interna) ===================== -->
+  <div class="overlay-cliente" *ngIf="itemClienteSeleccionado">
+    <div class="presupuesto-oficial">
+
+      <ion-button class="cerrar-x" fill="clear" color="medium" (click)="cerrarPresentacionCliente()" aria-label="Cerrar">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
+
+      <div class="oficial-marca">
+        <h1 class="marca-logo">
+          <span class="marca-audio">AUDIO</span><span class="marca-tuning sin-animacion">TUNING</span>
+        </h1>
+        <p>Otra Dimensión - Presupuesto oficial</p>
+      </div>
+
+      <div class="dato">
+        <span class="dato-label">Cliente</span>
+        <span class="dato-valor">{{ itemClienteSeleccionado.nombreCliente || 'Estimado cliente' }}</span>
+      </div>
+      <div class="dato">
+        <span class="dato-label">Vehículo</span>
+        <span class="dato-valor">
+          {{ itemClienteSeleccionado.marcaAuto }} {{ itemClienteSeleccionado.modeloAuto }}
+          <ng-container *ngIf="itemClienteSeleccionado.anoAuto">({{ itemClienteSeleccionado.anoAuto }})</ng-container>
+        </span>
+      </div>
+      <div class="dato">
+        <span class="dato-label">Patente</span>
+        <span class="patente">{{ itemClienteSeleccionado.patenteCliente || 'N/A' }}</span>
+      </div>
+      <div class="dato">
+        <span class="dato-label">Fecha</span>
+        <span class="dato-valor">{{ itemClienteSeleccionado.fecha }}</span>
+      </div>
+      <div class="dato">
+        <span class="dato-label">Estado</span>
+        <span class="chip-estado" [ngClass]="'estado-' + (itemClienteSeleccionado.estado || 'pendiente')">
+          {{ textoEstado(itemClienteSeleccionado.estado) }}
+        </span>
+      </div>
+
+      <div class="oficial-servicio">
+        <p class="oficial-servicio-nombre">{{ itemClienteSeleccionado.servicioSeleccionado }}</p>
+        <p class="detalle" *ngIf="itemClienteSeleccionado.descripcionServicio">{{ itemClienteSeleccionado.descripcionServicio }}</p>
+      </div>
+
+      <img class="tarjeta-foto" *ngIf="itemClienteSeleccionado.fotoTrabajo" [src]="itemClienteSeleccionado.fotoTrabajo" alt="Foto del trabajo">
+
+      <div class="desglose">
+        <div class="desglose-fila" *ngFor="let r of itemClienteSeleccionado.repuestos">
+          <span>{{ r.nombre }}</span>
+          <span>{{ clp(r.costo) }}</span>
+        </div>
+        <div class="desglose-fila">
+          <span>Mano de obra</span>
+          <span>{{ clp(itemClienteSeleccionado.costoManoObra) }}</span>
+        </div>
+      </div>
+
+      <div class="oficial-total">
+        <span>Total a pagar</span>
+        <strong>{{ clp(itemClienteSeleccionado.totalCobrado) }}</strong>
+      </div>
+
+      <ion-button expand="block" color="success" (click)="enviarWhatsApp(itemClienteSeleccionado)">
+        <ion-icon name="logo-whatsapp" slot="start"></ion-icon> Enviar por WhatsApp
+      </ion-button>
+    </div>
+  </div>
+
+</ion-content>
+
+<!-- Barra inferior fija con el total -->
+<ion-footer *ngIf="seccion === 'nuevo'" class="footer-total">
+  <ion-toolbar>
+    <div class="footer-contenido">
+      <div class="footer-montos">
+        <span class="footer-label">Total</span>
+        <strong class="footer-valor">{{ clp(totalCalculado) }}</strong>
+        <span class="footer-detalle">Repuestos {{ clp(totalRepuestos) }} + Mano de obra {{ clp(trabajoActual.costoManoObra) }}</span>
+      </div>
+      <ion-button color="success" [disabled]="procesandoFoto" (click)="guardarTrabajo()">
+        Guardar
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>
