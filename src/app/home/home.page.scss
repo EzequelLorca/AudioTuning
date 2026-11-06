@@ -867,3 +867,99 @@ ion-popover {
 .espacio-arriba-boton {
   margin-top: 8px;
 }
+
+/* =========================================================
+   PANEL DE REPUESTOS GUARDADOS
+   ========================================================= */
+.guardados {
+  margin-top: 12px;
+}
+
+.guardados-aviso,
+.guardados-vacio {
+  margin: 0 0 8px;
+  color: $texto-suave;
+  font-size: 13px;
+}
+
+.guardados-grupo + .guardados-grupo {
+  margin-top: 12px;
+}
+
+.guardados-titulo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px;
+  color: $verde;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.guardado {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 10px 12px;
+  border: 1px solid rgba($verde, 0.35);
+  border-radius: 10px;
+  background: rgba($verde, 0.05);
+  color: $texto;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:active {
+    background: rgba($verde, 0.18);
+    border-color: $verde;
+  }
+
+  .guardado-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .guardado-nombre {
+    font-size: 15px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .guardado-detalle {
+    color: $texto-suave;
+    font-size: 12px;
+  }
+
+  .guardado-precio {
+    flex-shrink: 0;
+    color: $verde;
+    font-weight: 700;
+  }
+
+  .guardado-mas {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    padding: 4px;
+    border-radius: 50%;
+    background: $verde;
+    color: $fondo;
+  }
+}
+
+.guardados-ver-mas {
+  width: 100%;
+  padding: 8px;
+  border: 1px dashed rgba($morado, 0.8);
+  border-radius: 10px;
+  background: transparent;
+  color: $texto-suave;
+  font-size: 13px;
+  cursor: pointer;
+}

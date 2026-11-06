@@ -21,6 +21,23 @@ import {
 
 type Errores = Record<string, string>;
 
+/** Un repuesto que ya cobraste antes, armado desde el historial */
+interface RepuestoGuardado {
+  nombre: string;
+  costo: number;          // último precio cobrado
+  veces: number;          // cuántas veces lo cobraste
+  ultimaVez: number;
+  ultimoAuto: string;     // ej: "Kia Rio"
+  autos: string[];        // claves "marca|modelo" donde se usó
+  marcas: string[];       // marcas donde se usó
+}
+
+interface GrupoRepuestos {
+  titulo: string;
+  items: RepuestoGuardado[];
+  ocultos: number;
+}
+
 /** Valor especial de los selectores para "agregar otra marca/modelo" */
 const NUEVA_OPCION = '__nueva__';
 
@@ -82,7 +99,7 @@ export class HomePage implements OnInit {
   ];
 
   tipos: { valor: TipoItem; titulo: string; placeholder: string; icono: string }[] = [
-    { valor: 'repuesto', titulo: 'Repuestos', placeholder: 'Repuesto', icono: 'cube-outline' },
+    { valor: 'repuesto', titulo: 'Repuestos', placeholder: 'Buscar o escribir repuesto', icono: 'cube-outline' },
     { valor: 'mano-obra', titulo: 'Mano de obra', placeholder: 'Trabajo realizado', icono: 'hammer-outline' }
   ];
 
@@ -101,8 +118,13 @@ export class HomePage implements OnInit {
   private marcaPrevia = '';
   private modeloPrevio = '';
 
-  // --- Precios cobrados antes ---
+  // --- Precios cobrados antes (mano de obra) ---
   private catalogoPrecios: ItemCatalogo[] = [];
+
+  // --- Repuestos guardados (desde el historial) ---
+  verTodosRepuestos = false;
+  private cacheHistorial: RegistroTrabajo[] | null = null;
+  private cacheRepuestos: RepuestoGuardado[] = [];
 
   // --- Formulario (nuevo o edición) ---
   trabajoActual: RegistroTrabajo = this.inicializarTrabajo();
@@ -168,6 +190,10 @@ export class HomePage implements OnInit {
 
   private mismoTexto(a?: string | null, b?: string | null): boolean {
     return (a || '').trim().toLowerCase() === (b || '').trim().toLowerCase();
+  }
+
+  private clave(texto?: string | null): string {
+    return (texto || '').trim().toLowerCase();
   }
 
   private limpiarTelefono(tel?: string | null): string {
@@ -390,7 +416,7 @@ export class HomePage implements OnInit {
 
   agregarItem(tipo: TipoItem) {
     const nombre = this.nuevo[tipo].nombre.trim();
-    const costo = Number(this.nuevo[tipo].costo);
+    const costo = Math.round(Number(this.nuevo[tipo].costo));
     if (!nombre || !costo || costo <= 0) {
       this.mostrarToast('Escribe la descripción y un costo mayor a 0.', 'warning');
       return;
@@ -406,10 +432,30 @@ export class HomePage implements OnInit {
     this.calcularTotal();
   }
 
+  /** Agrega con un toque un repuesto que ya cobraste antes, con su último precio */
+  agregarGuardado(r: RepuestoGuardado) {
+    this.trabajoActual.repuestos.push({ nombre: r.nombre, costo: r.costo, tipo: 'repuesto' });
+    this.nuevo['repuesto'] = { nombre: '', costo: null };
+    this.calcularTotal();
+  }
+
   eliminarItem(item: Repuesto) {
     const i = this.trabajoActual.repuestos.indexOf(item);
     if (i >= 0) this.trabajoActual.repuestos.splice(i, 1);
     this.calcularTotal();
+  }
+
+  /** Evita costos negativos o con decimales */
+  corregirCosto(item: Repuesto) {
+    item.costo = Math.max(0, Math.round(Number(item.costo) || 0));
+    this.calcularTotal();
+  }
+
+  corregirCostoNuevo(tipo: TipoItem) {
+    const valor = this.nuevo[tipo].costo;
+    if (valor === null || (valor as any) === '') return;
+    const limpio = Math.max(0, Math.round(Number(valor) || 0));
+    this.nuevo[tipo].costo = limpio > 0 ? limpio : null;
   }
 
   calcularTotal() {
@@ -420,7 +466,7 @@ export class HomePage implements OnInit {
     this.trabajoActual.totalCobrado = this.totalCalculado;
   }
 
-  /** Lo que ya cobraste antes: primero los de la misma marca y los más usados */
+  /** Mano de obra cobrada antes (botones pequeños) */
   sugerenciasDe(tipo: TipoItem): ItemCatalogo[] {
     const texto = this.nuevo[tipo].nombre.trim().toLowerCase();
     const yaAgregados = this.itemsDe(tipo).map(i => (i.nombre || '').trim().toLowerCase());
@@ -439,7 +485,98 @@ export class HomePage implements OnInit {
   }
 
   // =========================================================
-  // CATÁLOGO DE PRECIOS (lo que ya cobraste)
+  // REPUESTOS GUARDADOS (base de datos interna = historial)
+  // =========================================================
+
+  /** Todos los repuestos que ya cobraste, con su último precio */
+  private get repuestosGuardados(): RepuestoGuardado[] {
+    if (this.cacheHistorial === this.historial) return this.cacheRepuestos;
+
+    const mapa = new Map<string, RepuestoGuardado>();
+    // Del más antiguo al más nuevo, para quedarse con el último precio
+    [...this.historial].reverse().forEach(t => {
+      const momento = Number(t.id) || 0;
+      const claveAuto = `${this.clave(t.marcaAuto)}|${this.clave(t.modeloAuto)}`;
+      const claveMarca = this.clave(t.marcaAuto);
+
+      this.itemsDe('repuesto', t).forEach(r => {
+        const nombre = (r.nombre || '').trim();
+        const costo = Number(r.costo || 0);
+        if (!nombre || costo <= 0) return;
+
+        const k = this.clave(nombre);
+        let g = mapa.get(k);
+        if (!g) {
+          g = { nombre, costo, veces: 0, ultimaVez: 0, ultimoAuto: '', autos: [], marcas: [] };
+          mapa.set(k, g);
+        }
+        g.veces++;
+        if (momento >= g.ultimaVez) {
+          g.nombre = nombre;
+          g.costo = costo;
+          g.ultimaVez = momento;
+          g.ultimoAuto = `${t.marcaAuto} ${t.modeloAuto}`.trim();
+        }
+        if (!g.autos.includes(claveAuto)) g.autos.push(claveAuto);
+        if (claveMarca && !g.marcas.includes(claveMarca)) g.marcas.push(claveMarca);
+      });
+    });
+
+    this.cacheRepuestos = [...mapa.values()];
+    this.cacheHistorial = this.historial;
+    return this.cacheRepuestos;
+  }
+
+  /** Repuestos guardados ordenados: primero los de este modelo, luego de esta marca, luego el resto */
+  get gruposRepuestos(): GrupoRepuestos[] {
+    const texto = this.clave(this.nuevo['repuesto'].nombre);
+    const yaAgregados = this.itemsDe('repuesto').map(i => this.clave(i.nombre));
+    const marca = this.clave(this.trabajoActual.marcaAuto);
+    const modelo = this.clave(this.trabajoActual.modeloAuto);
+
+    const disponibles = this.repuestosGuardados
+      .filter(r => !yaAgregados.includes(this.clave(r.nombre)))
+      .filter(r => !texto || this.clave(r.nombre).includes(texto))
+      .sort((a, b) => (b.veces - a.veces) || (b.ultimaVez - a.ultimaVez));
+
+    const grupos: GrupoRepuestos[] = [];
+    const usados = new Set<RepuestoGuardado>();
+
+    if (marca && modelo && modelo !== this.clave(NUEVA_OPCION)) {
+      const items = disponibles.filter(r => r.autos.includes(`${marca}|${modelo}`));
+      if (items.length) {
+        grupos.push({ titulo: `Usados en ${this.trabajoActual.marcaAuto} ${this.trabajoActual.modeloAuto}`, items, ocultos: 0 });
+        items.forEach(i => usados.add(i));
+      }
+    }
+
+    if (marca && marca !== this.clave(NUEVA_OPCION)) {
+      const items = disponibles.filter(r => !usados.has(r) && r.marcas.includes(marca));
+      if (items.length) {
+        grupos.push({ titulo: `Otros de ${this.trabajoActual.marcaAuto}`, items, ocultos: 0 });
+        items.forEach(i => usados.add(i));
+      }
+    }
+
+    const otros = disponibles.filter(r => !usados.has(r));
+    if (otros.length) {
+      const limite = this.verTodosRepuestos || texto ? otros.length : 5;
+      grupos.push({
+        titulo: grupos.length ? 'Otros repuestos guardados' : 'Repuestos guardados',
+        items: otros.slice(0, limite),
+        ocultos: Math.max(0, otros.length - limite)
+      });
+    }
+
+    return grupos;
+  }
+
+  hayRepuestosGuardados(): boolean {
+    return this.repuestosGuardados.length > 0;
+  }
+
+  // =========================================================
+  // CATÁLOGO DE PRECIOS (mano de obra cobrada antes)
   // =========================================================
 
   private cargarCatalogo() {
@@ -450,7 +587,6 @@ export class HomePage implements OnInit {
         return;
       } catch { /* si falla, se reconstruye abajo */ }
     }
-    // Primera vez: se arma con los presupuestos que ya tenías
     this.catalogoPrecios = [];
     [...this.historial].reverse().forEach(t => this.registrarEnCatalogo(t, true, Number(t.id) || Date.now()));
     this.guardarCatalogo();
@@ -513,6 +649,7 @@ export class HomePage implements OnInit {
     this.marcaPrevia = '';
     this.modeloPrevio = '';
     this.nuevo = this.nuevoVacio();
+    this.verTodosRepuestos = false;
     this.errores = {};
     this.calcularTotal();
   }
@@ -521,7 +658,6 @@ export class HomePage implements OnInit {
     this.trabajoActual = { ...item, repuestos: item.repuestos.map(r => ({ ...r })) };
     this.editandoId = item.id;
 
-    // Si la marca o el modelo no están en la lista, se agregan para poder mostrarlos
     if (item.marcaAuto) this.agregarMarca(item.marcaAuto, false);
     if (item.marcaAuto && item.modeloAuto) this.agregarModelo(item.marcaAuto, item.modeloAuto, false);
     this.modelosDisponibles = this.modelosDe(item.marcaAuto);
@@ -529,6 +665,7 @@ export class HomePage implements OnInit {
     this.modeloPrevio = item.modeloAuto;
 
     this.nuevo = this.nuevoVacio();
+    this.verTodosRepuestos = false;
     this.errores = {};
     this.calcularTotal();
     this.seccion = 'nuevo';
@@ -607,7 +744,11 @@ export class HomePage implements OnInit {
 
     const items: Repuesto[] = this.trabajoActual.repuestos
       .filter(i => (i.nombre || '').trim())
-      .map(i => ({ nombre: i.nombre.trim(), costo: Number(i.costo || 0), tipo: this.tipoDe(i) }));
+      .map(i => ({
+        nombre: i.nombre.trim(),
+        costo: Math.max(0, Math.round(Number(i.costo) || 0)),
+        tipo: this.tipoDe(i)
+      }));
 
     const datos: RegistroTrabajo = {
       ...this.trabajoActual,
@@ -628,7 +769,6 @@ export class HomePage implements OnInit {
     const indice = this.editandoId ? this.historial.findIndex(h => h.id === this.editandoId) : -1;
 
     if (indice >= 0) {
-      // Edición: conserva el id y la fecha original
       const original = this.historial[indice];
       const actualizado: RegistroTrabajo = { ...datos, id: original.id, fecha: original.fecha };
       const copia = [...this.historial];
@@ -645,7 +785,6 @@ export class HomePage implements OnInit {
       this.seccion = 'historial';
       this.mostrarToast('Cambios guardados.');
     } else {
-      // Nuevo presupuesto
       const nuevoRegistro: RegistroTrabajo = {
         ...datos,
         id: Date.now().toString(),
@@ -684,7 +823,7 @@ export class HomePage implements OnInit {
   private normalizar(i: any): RegistroTrabajo {
     const items: Repuesto[] = (i.repuestos || []).map((r: any) => ({
       nombre: r.nombre,
-      costo: Number(r.costo || 0),
+      costo: Math.max(0, Number(r.costo || 0)),
       tipo: r.tipo || 'repuesto'
     }));
     if (!items.some(r => r.tipo === 'mano-obra') && Number(i.costoManoObra) > 0) {
@@ -908,7 +1047,6 @@ export class HomePage implements OnInit {
     try {
       const datos: any = { title: 'Presupuesto AudioTuning', text: texto };
 
-      // Si hay foto, se intenta enviar junto al texto
       if (item.fotoTrabajo) {
         const archivo = await this.fotoComoArchivo(item.fotoTrabajo);
         if (archivo && nav.canShare && nav.canShare({ files: [archivo] })) {

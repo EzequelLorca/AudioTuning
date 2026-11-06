@@ -164,35 +164,69 @@
         <!-- Ítems agregados: se editan tocándolos -->
         <div class="item-linea" *ngFor="let item of itemsDe(t.valor)">
           <ion-input class="item-nombre" [(ngModel)]="item.nombre" aria-label="Descripción"></ion-input>
-          <ion-input class="item-costo" type="number" inputmode="numeric" [(ngModel)]="item.costo"
-            (ionInput)="calcularTotal()" aria-label="Costo"></ion-input>
+          <ion-input class="item-costo" type="number" inputmode="numeric" min="0" [(ngModel)]="item.costo"
+            (ionInput)="calcularTotal()" (ionBlur)="corregirCosto(item)" aria-label="Costo"></ion-input>
           <ion-button fill="clear" color="danger" size="small" (click)="eliminarItem(item)" aria-label="Quitar">
             <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
           </ion-button>
         </div>
         <p class="texto-vacio" *ngIf="itemsDe(t.valor).length === 0">Sin {{ t.titulo | lowercase }} todavía.</p>
 
-        <!-- Agregar uno nuevo -->
+        <!-- Agregar uno nuevo (en repuestos también sirve para buscar) -->
         <div class="agregar-repuesto">
           <ion-item>
             <ion-input [(ngModel)]="nuevo[t.valor].nombre" [placeholder]="t.placeholder" aria-label="Descripción nueva"></ion-input>
           </ion-item>
           <ion-item>
-            <ion-input type="number" inputmode="numeric" [(ngModel)]="nuevo[t.valor].costo" placeholder="$ Costo" aria-label="Costo nuevo"></ion-input>
+            <ion-input type="number" inputmode="numeric" min="0" [(ngModel)]="nuevo[t.valor].costo"
+              (ionBlur)="corregirCostoNuevo(t.valor)" placeholder="$ Costo" aria-label="Costo nuevo"></ion-input>
           </ion-item>
           <ion-button class="boton-agregar" color="secondary" (click)="agregarItem(t.valor)" aria-label="Agregar">
             <ion-icon slot="icon-only" name="add-outline"></ion-icon>
           </ion-button>
         </div>
 
-        <!-- Lo que ya cobraste antes -->
-        <div class="sugerencias" *ngIf="sugerenciasDe(t.valor).length > 0">
-          <p class="sugerencias-titulo"><ion-icon name="time-outline"></ion-icon> Ya cobraste antes · toca para agregar</p>
+        <!-- REPUESTOS GUARDADOS: según marca y modelo -->
+        <ng-container *ngIf="t.valor === 'repuesto'">
+          <div class="guardados" *ngIf="gruposRepuestos as grupos">
+
+            <p class="guardados-aviso" *ngIf="grupos.length > 0 && !trabajoActual.modeloAuto">
+              Elige marca y modelo para ver primero los repuestos de ese auto.
+            </p>
+
+            <div class="guardados-grupo" *ngFor="let g of grupos">
+              <p class="guardados-titulo"><ion-icon name="time-outline"></ion-icon> {{ g.titulo }}</p>
+
+              <button type="button" class="guardado" *ngFor="let r of g.items" (click)="agregarGuardado(r)">
+                <span class="guardado-info">
+                  <span class="guardado-nombre">{{ r.nombre }}</span>
+                  <span class="guardado-detalle">{{ r.ultimoAuto }} · {{ r.veces }} {{ r.veces === 1 ? 'vez' : 'veces' }}</span>
+                </span>
+                <span class="guardado-precio">{{ clp(r.costo) }}</span>
+                <ion-icon name="add-outline" class="guardado-mas"></ion-icon>
+              </button>
+
+              <button type="button" class="guardados-ver-mas" *ngIf="g.ocultos > 0" (click)="verTodosRepuestos = true">
+                Ver {{ g.ocultos }} más
+              </button>
+            </div>
+
+            <p class="guardados-vacio" *ngIf="grupos.length === 0 && hayRepuestosGuardados() && nuevo['repuesto'].nombre.trim()">
+              No hay repuestos guardados con ese nombre. Escribe el precio y tócalo en <strong>+</strong>.
+            </p>
+            <p class="guardados-vacio" *ngIf="!hayRepuestosGuardados()">
+              Aquí aparecerán los repuestos que ya cobraste, para agregarlos con un toque.
+            </p>
+          </div>
+        </ng-container>
+
+        <!-- MANO DE OBRA: lo cobrado antes en botones pequeños -->
+        <div class="sugerencias" *ngIf="t.valor === 'mano-obra' && sugerenciasDe(t.valor).length > 0">
+          <p class="sugerencias-titulo"><ion-icon name="time-outline"></ion-icon> Cobrado antes · toca para agregar</p>
           <div class="sugerencias-lista">
             <button type="button" class="chip-sugerencia" *ngFor="let s of sugerenciasDe(t.valor)" (click)="agregarSugerencia(s)">
               <span class="chip-nombre">{{ s.nombre }}</span>
               <span class="chip-precio">{{ clp(s.costo) }}</span>
-              <span class="chip-marca" *ngIf="s.marca">{{ s.marca }}</span>
             </button>
           </div>
         </div>
@@ -329,7 +363,6 @@
 
         <img class="tarjeta-foto" *ngIf="item.fotoTrabajo" [src]="item.fotoTrabajo" alt="Foto del trabajo">
 
-        <!-- Enviar al cliente -->
         <div class="botones-dobles">
           <ion-button expand="block" color="success" (click)="enviarWhatsApp(item)">
             <ion-icon name="logo-whatsapp" slot="start"></ion-icon> WhatsApp
