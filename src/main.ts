@@ -15,7 +15,7 @@ bootstrapApplication(AppComponent, {
     // Hace que la app funcione sin internet y se pueda instalar en el celular
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
-      registrationStrategy: 'registerWhenStable:30000'
+      registrationStrategy: 'registerImmediately'
     }),
   ],
 });

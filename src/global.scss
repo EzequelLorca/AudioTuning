@@ -35,3 +35,18 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+/* ===== Selector de marca/modelo y ventanas de texto ===== */
+ion-alert.alerta-neon {
+  .alert-radio-label { color: #ffffff; }
+  [aria-checked="true"] .alert-radio-label { color: #00ff66; }
+  .alert-radio-inner { background-color: #00ff66; }
+  [aria-checked="true"] .alert-radio-icon { border-color: #00ff66; }
+
+  .alert-input {
+    color: #ffffff;
+    border-bottom: 1px solid #7b2cbf;
+
+    &::placeholder { color: #b9b3cc; }
+  }
+}
