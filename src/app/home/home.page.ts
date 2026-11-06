@@ -1011,23 +1011,37 @@ export class HomePage implements OnInit {
   }
 
   /** Instagram no deja escribir el mensaje por link: se copia y se abre el chat */
+    /** Instagram: en el celular abre el menú de compartir con el mensaje ya escrito */
   async enviarInstagram(item: RegistroTrabajo) {
     const mensaje = this.armarMensaje(item, false);
-    const copiado = await this.copiarTexto(mensaje);
+    const nav: any = navigator;
+    const esCelular = /Android|iPhone|iPad/i.test(navigator.userAgent);
+
+    // Se copia igual, por si Instagram no lo pega solo
+    const copia = this.copiarTexto(mensaje);
+
+    // En el celular: compartir SOLO texto → Instagram lo deja escrito en el chat
+    if (esCelular && nav.share) {
+      try {
+        await nav.share({ text: mensaje });
+        return;
+      } catch (err: any) {
+        if (err?.name === 'AbortError') return; // el usuario cerró el menú
+      }
+    }
+
+    // Plan B (computador o si falla): copiar y abrir Instagram
+    const copiado = await copia;
     const usuario = this.limpiarInstagram(item.instagramCliente);
     const url = usuario ? `https://ig.me/m/${usuario}` : 'https://www.instagram.com/direct/inbox/';
-
     window.open(url, '_blank');
 
-    if (copiado) {
-      this.mostrarToast(
-        usuario
-          ? 'Mensaje copiado. En el chat, mantén presionado y elige "Pegar".'
-          : 'Mensaje copiado. Elige el chat del cliente y pégalo.'
-      );
-    } else {
-      this.mostrarToast('No se pudo copiar el mensaje. Usa el botón Compartir.', 'warning');
-    }
+    this.mostrarToast(
+      copiado
+        ? 'Mensaje copiado. En el chat, mantén presionado y elige "Pegar".'
+        : 'No se pudo copiar el mensaje. Usa el botón Compartir.',
+      copiado ? 'success' : 'warning'
+    );
   }
 
   /** Abre el menú de compartir del celular (Instagram, Messenger, Telegram, correo...) */
