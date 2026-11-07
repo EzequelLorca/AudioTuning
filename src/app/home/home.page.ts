@@ -5,7 +5,7 @@ import {
   IonHeader, IonToolbar, IonButtons, IonContent, IonFooter,
   IonSegment, IonSegmentButton, IonCard, IonCardContent,
   IonItem, IonLabel, IonInput, IonTextarea, IonList,
-  IonButton, IonIcon, IonSearchbar, IonSelect, IonSelectOption,
+  IonButton, IonIcon, IonSearchbar, IonSelect, IonSelectOption, IonModal,
   ToastController, AlertController
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';

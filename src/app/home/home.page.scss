@@ -1179,3 +1179,96 @@ ion-popover {
 @media (prefers-reduced-motion: reduce) {
   .overlay-cliente { animation: none; }
 }
+
+/* =========================================================
+   PESTAÑAS ABAJO
+   ========================================================= */
+.footer-total ion-toolbar.barra-tabs {
+  --background: #{$fondo};
+  --min-height: 58px;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  border-top: 1px solid rgba($morado, 0.6);
+  padding: 0 8px env(safe-area-inset-bottom, 0px);
+}
+
+.tabs {
+  display: flex;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.tab {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 0 6px;
+  border: none;
+  background: transparent;
+  color: $texto-suave;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+
+  ion-icon { font-size: 22px; }
+
+  &.activa {
+    color: $verde;
+
+    ion-icon { filter: drop-shadow(0 0 6px rgba($verde, 0.7)); }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 25%;
+      right: 25%;
+      height: 2px;
+      background: $verde;
+      box-shadow: 0 0 8px $verde;
+    }
+  }
+
+  .contador-tab {
+    position: absolute;
+    top: 4px;
+    left: calc(50% + 8px);
+    min-width: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: $morado;
+    color: $texto;
+    font-size: 11px;
+    line-height: 18px;
+  }
+}
+
+/* =========================================================
+   VISTA DEL CLIENTE (ventana completa)
+   ========================================================= */
+ion-modal.modal-cliente {
+  --width: 100%;
+  --height: 100%;
+  --border-radius: 0;
+  --background: #{$fondo};
+}
+
+.toolbar-modal {
+  --background: #{$fondo};
+  border-bottom: 1px solid rgba($morado, 0.5);
+
+  .boton-volver { --color: #{$texto}; }
+
+  .titulo-modal {
+    padding-right: 14px;
+    color: $texto-suave;
+    font-size: 13px;
+  }
+}
+
+.contenido-modal {
+  --background: #{$fondo};
+}
