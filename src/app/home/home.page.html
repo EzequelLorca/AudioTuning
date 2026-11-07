@@ -453,83 +453,89 @@
   </div>
 
   <!-- ===================== VISTA PARA EL CLIENTE (sin nota interna) ===================== -->
-  <div class="overlay-cliente" *ngIf="itemClienteSeleccionado">
-    <div class="presupuesto-oficial">
+  <!-- ===================== VISTA PARA EL CLIENTE (pantalla completa, sin nota interna) ===================== -->
+<div class="overlay-cliente" *ngIf="itemClienteSeleccionado">
 
-      <ion-button class="cerrar-x" fill="clear" color="medium" (click)="cerrarPresentacionCliente()" aria-label="Cerrar">
-        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
-      </ion-button>
+  <!-- Barra fija para volver -->
+  <div class="overlay-barra">
+    <ion-button fill="clear" class="overlay-volver" (click)="cerrarPresentacionCliente()">
+      <ion-icon slot="start" name="arrow-back-outline"></ion-icon> Volver
+    </ion-button>
+    <span class="overlay-titulo">Vista del cliente</span>
+  </div>
 
-      <div class="oficial-marca">
-        <h1 class="marca-logo">
-          <span class="marca-audio">AUDIO</span><span class="marca-tuning sin-animacion">TUNING</span>
-        </h1>
-        <p>Otra Dimensión - Presupuesto oficial</p>
-      </div>
+  <div class="presupuesto-oficial">
 
-      <div class="dato">
-        <span class="dato-label">Cliente</span>
-        <span class="dato-valor">{{ itemClienteSeleccionado.nombreCliente || 'Estimado cliente' }}</span>
-      </div>
-      <div class="dato">
-        <span class="dato-label">Vehículo</span>
-        <span class="dato-valor">
-          {{ itemClienteSeleccionado.marcaAuto }} {{ itemClienteSeleccionado.modeloAuto }}
-          <ng-container *ngIf="itemClienteSeleccionado.anoAuto">({{ itemClienteSeleccionado.anoAuto }})</ng-container>
-        </span>
-      </div>
-      <div class="dato">
-        <span class="dato-label">Patente</span>
-        <span class="patente">{{ itemClienteSeleccionado.patenteCliente || 'N/A' }}</span>
-      </div>
-      <div class="dato">
-        <span class="dato-label">Fecha</span>
-        <span class="dato-valor">{{ itemClienteSeleccionado.fecha }}</span>
-      </div>
-      <div class="dato">
-        <span class="dato-label">Estado</span>
-        <span class="chip-estado" [ngClass]="'estado-' + (itemClienteSeleccionado.estado || 'pendiente')">
-          {{ textoEstado(itemClienteSeleccionado.estado) }}
-        </span>
-      </div>
+    <div class="oficial-marca">
+      <h1 class="marca-logo">
+        <span class="marca-audio">AUDIO</span><span class="marca-tuning sin-animacion">TUNING</span>
+      </h1>
+      <p>Otra Dimensión - Presupuesto oficial</p>
+    </div>
 
-      <div class="oficial-servicio">
-        <p class="oficial-servicio-nombre">{{ itemClienteSeleccionado.servicioSeleccionado }}</p>
-        <p class="detalle" *ngIf="itemClienteSeleccionado.descripcionServicio">{{ itemClienteSeleccionado.descripcionServicio }}</p>
-      </div>
+    <div class="dato">
+      <span class="dato-label">Cliente</span>
+      <span class="dato-valor">{{ itemClienteSeleccionado.nombreCliente || 'Estimado cliente' }}</span>
+    </div>
+    <div class="dato">
+      <span class="dato-label">Vehículo</span>
+      <span class="dato-valor">
+        {{ itemClienteSeleccionado.marcaAuto }} {{ itemClienteSeleccionado.modeloAuto }}
+        <ng-container *ngIf="itemClienteSeleccionado.anoAuto">({{ itemClienteSeleccionado.anoAuto }})</ng-container>
+      </span>
+    </div>
+    <div class="dato">
+      <span class="dato-label">Patente</span>
+      <span class="patente">{{ itemClienteSeleccionado.patenteCliente || 'N/A' }}</span>
+    </div>
+    <div class="dato">
+      <span class="dato-label">Fecha</span>
+      <span class="dato-valor">{{ itemClienteSeleccionado.fecha }}</span>
+    </div>
+    <div class="dato">
+      <span class="dato-label">Estado</span>
+      <span class="chip-estado" [ngClass]="'estado-' + (itemClienteSeleccionado.estado || 'pendiente')">
+        {{ textoEstado(itemClienteSeleccionado.estado) }}
+      </span>
+    </div>
 
-      <img class="tarjeta-foto" *ngIf="itemClienteSeleccionado.fotoTrabajo" [src]="itemClienteSeleccionado.fotoTrabajo" alt="Foto del trabajo">
+    <div class="oficial-servicio">
+      <p class="oficial-servicio-nombre">{{ itemClienteSeleccionado.servicioSeleccionado }}</p>
+      <p class="detalle" *ngIf="itemClienteSeleccionado.descripcionServicio">{{ itemClienteSeleccionado.descripcionServicio }}</p>
+    </div>
 
-      <div class="desglose">
-        <ng-container *ngFor="let t of tiposOrden">
-          <ng-container *ngIf="itemsDe(t.valor, itemClienteSeleccionado).length > 0">
-            <p class="desglose-subtitulo">{{ t.titulo }}</p>
-            <div class="desglose-fila" *ngFor="let r of itemsDe(t.valor, itemClienteSeleccionado)">
-              <span>{{ r.nombre }}</span>
-              <span>{{ clp(r.costo) }}</span>
-            </div>
-          </ng-container>
+    <img class="tarjeta-foto" *ngIf="itemClienteSeleccionado.fotoTrabajo" [src]="itemClienteSeleccionado.fotoTrabajo" alt="Foto del trabajo">
+
+    <div class="desglose">
+      <ng-container *ngFor="let t of tiposOrden">
+        <ng-container *ngIf="itemsDe(t.valor, itemClienteSeleccionado).length > 0">
+          <p class="desglose-subtitulo">{{ t.titulo }}</p>
+          <div class="desglose-fila" *ngFor="let r of itemsDe(t.valor, itemClienteSeleccionado)">
+            <span>{{ r.nombre }}</span>
+            <span>{{ clp(r.costo) }}</span>
+          </div>
         </ng-container>
-      </div>
+      </ng-container>
+    </div>
 
-      <div class="oficial-total">
-        <span>Total a pagar</span>
-        <strong>{{ clp(itemClienteSeleccionado.totalCobrado) }}</strong>
-      </div>
+    <div class="oficial-total">
+      <span>Total a pagar</span>
+      <strong>{{ clp(itemClienteSeleccionado.totalCobrado) }}</strong>
+    </div>
 
-      <div class="botones-dobles">
-        <ion-button expand="block" color="success" (click)="enviarWhatsApp(itemClienteSeleccionado)">
-          <ion-icon name="logo-whatsapp" slot="start"></ion-icon> WhatsApp
-        </ion-button>
-        <ion-button expand="block" class="boton-instagram" (click)="enviarInstagram(itemClienteSeleccionado)">
-          <ion-icon name="logo-instagram" slot="start"></ion-icon> Instagram
-        </ion-button>
-      </div>
-      <ion-button expand="block" fill="outline" color="secondary" class="espacio-arriba-boton" (click)="compartir(itemClienteSeleccionado)">
-        <ion-icon name="share-social-outline" slot="start"></ion-icon> Compartir por otra app
+    <div class="botones-dobles">
+      <ion-button expand="block" color="success" (click)="enviarWhatsApp(itemClienteSeleccionado)">
+        <ion-icon name="logo-whatsapp" slot="start"></ion-icon> WhatsApp
+      </ion-button>
+      <ion-button expand="block" class="boton-instagram" (click)="enviarInstagram(itemClienteSeleccionado)">
+        <ion-icon name="logo-instagram" slot="start"></ion-icon> Instagram
       </ion-button>
     </div>
+    <ion-button expand="block" fill="outline" color="secondary" class="espacio-arriba-boton" (click)="compartir(itemClienteSeleccionado)">
+      <ion-icon name="share-social-outline" slot="start"></ion-icon> Compartir por otra app
+    </ion-button>
   </div>
+</div>
 
 </ion-content>
 
