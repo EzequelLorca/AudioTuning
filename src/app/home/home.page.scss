@@ -34,6 +34,9 @@ ion-button {
   box-shadow: 0 4px 18px rgba($morado, 0.55);
 }
 
+.lado-toolbar { min-width: 48px; }
+.boton-volver { --color: #{$texto}; }
+
 .marca {
   display: flex;
   flex-direction: column;
@@ -53,10 +56,7 @@ ion-button {
 
 .marca-audio {
   color: $texto;
-  text-shadow:
-    0 0 3px $texto,
-    0 0 10px $morado-claro,
-    0 0 22px $morado;
+  text-shadow: 0 0 3px $texto, 0 0 10px $morado-claro, 0 0 22px $morado;
 }
 
 .marca-tuning {
@@ -96,33 +96,6 @@ ion-button {
 }
 
 /* =========================================================
-   PESTAÑAS
-   ========================================================= */
-.barra-segment {
-  --background: #{$fondo};
-  padding: 6px 12px 0;
-
-  ion-segment-button {
-    --color: #{$texto-suave};
-    --color-checked: #{$verde};
-    --indicator-color: #{$verde};
-    text-transform: none;
-    font-size: 15px;
-    min-height: 44px;
-  }
-
-  .contador {
-    display: inline-block;
-    margin-left: 6px;
-    padding: 1px 7px;
-    border-radius: 10px;
-    background: $morado;
-    color: $texto;
-    font-size: 12px;
-  }
-}
-
-/* =========================================================
    FORMULARIO
    ========================================================= */
 .formulario,
@@ -130,6 +103,22 @@ ion-button {
   max-width: 560px;
   margin: 0 auto;
   padding-bottom: 16px;
+}
+
+.banner-edicion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border: 1px solid $amarillo;
+  border-radius: 12px;
+  background: rgba($amarillo, 0.08);
+
+  .banner-titulo { margin: 0; color: $amarillo; font-weight: 700; }
+  .banner-sub    { margin: 2px 0 0; color: $texto-suave; font-size: 13px; }
+  ion-button     { margin: 0; flex-shrink: 0; }
 }
 
 .bloque {
@@ -165,12 +154,9 @@ ion-button {
   display: flex;
   flex-direction: column;
   gap: 10px;
-
-  &.espacio-arriba { margin-top: 12px; }
 }
 
-.bloque ion-item,
-.zona-edicion ion-item {
+.bloque ion-item {
   --background: #{$campo};
   --color: #{$texto};
   --border-radius: 10px;
@@ -183,6 +169,13 @@ ion-button {
 
   &.item-has-focus { border-color: $verde; }
   &.campo-error    { border-color: $rojo; }
+
+  &.item-interno {
+    --background: #{rgba($amarillo, 0.07)};
+    border: 1px dashed rgba($amarillo, 0.6);
+
+    &.item-has-focus { border-color: $amarillo; border-style: solid; }
+  }
 }
 
 ion-input, ion-textarea, ion-select {
@@ -207,31 +200,187 @@ ion-input, ion-textarea, ion-select {
   letter-spacing: 1px;
 }
 
-/* ---------- Repuestos ---------- */
-.repuestos-lista {
-  margin-bottom: 10px;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid rgba($morado, 0.5);
-}
-
-.repuesto {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 4px 4px 12px;
-  background: $fondo;
-
-  & + & { border-top: 1px solid rgba($morado, 0.35); }
-
-  .repuesto-nombre { flex: 1; color: $texto; }
-  .repuesto-costo  { color: $verde; font-weight: 600; }
-}
-
 .texto-vacio {
   margin: 0 0 10px;
   color: $texto-suave;
   font-size: 14px;
+}
+
+/* =========================================================
+   CATEGORÍAS (colores)
+   ========================================================= */
+.tag-repuesto  { --tag: #{$verde}; }
+.tag-accesorio { --tag: #{$morado-claro}; }
+.tag-otro      { --tag: #{$cian}; }
+.tag-mano-obra { --tag: #{$amarillo}; }
+
+.item-tag,
+.chip-tipo {
+  flex-shrink: 0;
+  padding: 3px 7px;
+  border: 1px solid var(--tag);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--tag);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.item-tag { cursor: pointer; }
+
+/* =========================================================
+   TRABAJOS ANTERIORES DE LA MARCA
+   ========================================================= */
+.bloque-trabajos { border-color: rgba($verde, 0.5); }
+
+.trabajo-previo {
+  margin-bottom: 10px;
+  padding: 12px;
+  border: 1px solid rgba($morado, 0.6);
+  border-radius: 12px;
+  background: $fondo;
+
+  &.mismo-modelo {
+    border-color: $verde;
+    box-shadow: 0 0 10px rgba($verde, 0.15);
+  }
+
+  ion-button { margin: 8px 0 0; --border-radius: 10px; }
+}
+
+.trabajo-previo-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.trabajo-previo-auto { margin: 0; color: $texto; font-weight: 700; }
+.trabajo-previo-ano  { color: $texto-suave; font-weight: 500; }
+.trabajo-previo-sub  { margin: 3px 0 0; color: $texto-suave; font-size: 12px; }
+.trabajo-previo-total { flex-shrink: 0; color: $verde; font-weight: 800; }
+
+.etiqueta-mismo {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 8px;
+  background: $verde;
+  color: $fondo;
+  font-size: 11px;
+  font-weight: 800;
+  vertical-align: middle;
+}
+
+.trabajo-previo-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.chip-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 6px 10px;
+  border: 1px solid rgba($verde, 0.4);
+  border-radius: 18px;
+  background: rgba($verde, 0.06);
+  color: $texto;
+  font-size: 13px;
+  cursor: pointer;
+
+  .chip-item-nombre {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong { color: $verde; }
+  &:active { background: rgba($verde, 0.2); }
+
+  &.agregado {
+    opacity: 0.4;
+    cursor: default;
+    text-decoration: line-through;
+  }
+}
+
+/* =========================================================
+   COBROS: ÍTEMS, CATEGORÍAS Y GUARDADOS
+   ========================================================= */
+.sub-bloque + .sub-bloque {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed rgba($morado, 0.6);
+}
+
+.sub-bloque-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  color: $texto;
+  font-weight: 700;
+
+  span { display: inline-flex; align-items: center; gap: 6px; }
+  ion-icon { color: $verde; font-size: 18px; }
+  .sub-bloque-total { color: $verde; }
+}
+
+.item-linea {
+  display: grid;
+  grid-template-columns: 1fr 100px auto;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 6px;
+  padding: 2px 2px 2px 10px;
+  background: $fondo;
+  border: 1px solid rgba($morado, 0.5);
+  border-radius: 10px;
+
+  &.con-tag { grid-template-columns: auto 1fr 90px auto; }
+
+  ion-input {
+    --color: #{$texto};
+    --padding-start: 2px;
+    --padding-end: 2px;
+    min-height: 42px;
+  }
+
+  .item-costo { --color: #{$verde}; font-weight: 700; }
+  ion-button { margin: 0; }
+}
+
+.selector-categoria {
+  display: flex;
+  gap: 6px;
+  margin: 10px 0 8px;
+}
+
+.chip-categoria {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 6px;
+  border: 1px solid var(--tag);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--tag);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &.activo {
+    background: var(--tag);
+    color: $fondo;
+    box-shadow: 0 0 10px var(--tag);
+  }
 }
 
 .agregar-repuesto {
@@ -240,13 +389,6 @@ ion-input, ion-textarea, ion-select {
   gap: 8px;
   align-items: center;
 
-  ion-item {
-    --background: #{$campo};
-    --color: #{$texto};
-    --border-radius: 10px;
-    border-radius: 10px;
-  }
-
   .boton-agregar {
     margin: 0;
     height: 48px;
@@ -254,7 +396,87 @@ ion-input, ion-textarea, ion-select {
   }
 }
 
-/* ---------- Foto ---------- */
+.guardados { margin-top: 12px; }
+
+.guardados-aviso,
+.guardados-vacio {
+  margin: 0 0 8px;
+  color: $texto-suave;
+  font-size: 13px;
+}
+
+.guardados-grupo + .guardados-grupo { margin-top: 12px; }
+
+.guardados-titulo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px;
+  color: $verde;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.guardado {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 10px 12px;
+  border: 1px solid rgba($verde, 0.35);
+  border-radius: 10px;
+  background: rgba($verde, 0.05);
+  color: $texto;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:active { background: rgba($verde, 0.18); border-color: $verde; }
+
+  .guardado-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .guardado-nombre {
+    font-size: 15px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .guardado-detalle { color: $texto-suave; font-size: 12px; }
+  .guardado-precio  { flex-shrink: 0; color: $verde; font-weight: 700; }
+
+  .guardado-mas {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    padding: 4px;
+    border-radius: 50%;
+    background: $verde;
+    color: $fondo;
+  }
+}
+
+.guardados-ver-mas {
+  width: 100%;
+  padding: 8px;
+  border: 1px dashed rgba($morado, 0.8);
+  border-radius: 10px;
+  background: transparent;
+  color: $texto-suave;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* =========================================================
+   FOTO
+   ========================================================= */
 .foto-zona {
   margin-top: 10px;
   display: flex;
@@ -291,7 +513,7 @@ ion-input, ion-textarea, ion-select {
 }
 
 /* =========================================================
-   FOOTER CON TOTAL
+   BARRA INFERIOR: TOTAL + PESTAÑAS
    ========================================================= */
 .footer-total ion-toolbar {
   --background: #{$superficie};
@@ -326,863 +548,6 @@ ion-input, ion-textarea, ion-select {
 .footer-valor   { color: $verde; font-size: 24px; text-shadow: 0 0 10px rgba($verde, 0.5); }
 .footer-detalle { color: $texto-suave; font-size: 11px; }
 
-/* =========================================================
-   RESUMEN DEL MES
-   ========================================================= */
-.resumen {
-  margin-bottom: 12px;
-  padding: 14px;
-  background: $superficie;
-  border: 1px solid rgba($verde, 0.5);
-  border-radius: 14px;
-  box-shadow: 0 0 16px rgba($verde, 0.12);
-}
-
-.resumen-titulo {
-  margin: 0 0 10px;
-  color: $verde;
-  font-weight: 700;
-
-  &::first-letter { text-transform: uppercase; }
-}
-
-.resumen-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.resumen-dato {
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
-  background: $fondo;
-  border-radius: 10px;
-}
-
-.resumen-valor {
-  color: $texto;
-  font-size: 18px;
-  font-weight: 800;
-
-  &.verde    { color: $verde; }
-  &.amarillo { color: $amarillo; }
-}
-
-.resumen-label {
-  color: $texto-suave;
-  font-size: 12px;
-}
-
-.resumen-top {
-  margin: 10px 0 0;
-  color: $texto-suave;
-  font-size: 13px;
-
-  strong { color: $texto; }
-}
-
-/* =========================================================
-   HISTORIAL
-   ========================================================= */
-.buscador {
-  --background: #{$campo};
-  --color: #{$texto};
-  --placeholder-color: #{$texto-suave};
-  --icon-color: #{$verde};
-  --border-radius: 10px;
-  padding: 0 0 6px;
-}
-
-.filtros-estado {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  padding-bottom: 10px;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar { display: none; }
-}
-
-.chip-filtro {
-  flex-shrink: 0;
-  padding: 6px 12px;
-  border-radius: 20px;
-  border: 1px solid rgba($morado, 0.8);
-  background: $superficie;
-  color: $texto-suave;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-
-  .chip-num {
-    margin-left: 4px;
-    opacity: 0.7;
-  }
-
-  &.activo {
-    color: $fondo;
-    background: $verde;
-    border-color: $verde;
-    box-shadow: 0 0 10px rgba($verde, 0.5);
-  }
-
-  &.chip-pendiente.activo  { background: $amarillo; border-color: $amarillo; box-shadow: 0 0 10px rgba($amarillo, 0.5); }
-  &.chip-en-proceso.activo { background: $morado-claro; border-color: $morado-claro; box-shadow: 0 0 10px rgba($morado-claro, 0.5); }
-  &.chip-terminado.activo  { background: $cian; border-color: $cian; box-shadow: 0 0 10px rgba($cian, 0.5); }
-}
-
-.tarjeta-trabajo {
-  margin: 0 0 14px;
-  background: $superficie;
-  border: 1px solid rgba($morado, 0.7);
-  border-radius: 14px;
-  box-shadow: none;
-}
-
-.tarjeta-cabecera {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 14px 16px 0;
-}
-
-.tarjeta-auto {
-  margin: 0;
-  color: $verde;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.tarjeta-ano {
-  color: $texto-suave;
-  font-size: 15px;
-  font-weight: 500;
-}
-
-.tarjeta-fecha {
-  margin: 2px 0 0;
-  color: $texto-suave;
-  font-size: 13px;
-}
-
-.tarjeta-estado {
-  padding: 10px 16px 0;
-}
-
-/* ---------- Estados (colores) ---------- */
-.select-estado,
-.chip-estado {
-  display: inline-flex;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 700;
-  border: 1px solid currentColor;
-}
-
-.select-estado {
-  --padding-start: 12px;
-  --padding-end: 8px;
-  --padding-top: 4px;
-  --padding-bottom: 4px;
-  min-height: 30px;
-  width: auto;
-  max-width: 170px;
-
-  &::part(icon) {
-    color: currentColor;
-    opacity: 1;
-  }
-}
-
-.chip-estado { padding: 3px 12px; }
-
-.estado-pendiente  { color: $amarillo;     background: rgba($amarillo, 0.12); }
-.estado-en-proceso { color: $morado-claro; background: rgba($morado-claro, 0.14); }
-.estado-terminado  { color: $cian;         background: rgba($cian, 0.12); }
-.estado-pagado     { color: $verde;        background: rgba($verde, 0.12); }
-
-/* Patente estilo placa chilena */
-.patente {
-  flex-shrink: 0;
-  padding: 3px 8px;
-  border-radius: 5px;
-  background: $texto;
-  color: #111;
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  border: 2px solid #111;
-  outline: 1px solid $texto;
-}
-
-.dato {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 6px 0;
-
-  .dato-label { color: $texto-suave; font-size: 14px; }
-  .dato-valor { color: $texto; font-weight: 600; text-align: right; }
-}
-
-.detalle {
-  margin: 6px 0;
-  padding: 8px 10px;
-  border-left: 3px solid $morado;
-  background: rgba($morado, 0.12);
-  color: $texto;
-  border-radius: 0 8px 8px 0;
-}
-
-.desglose {
-  margin: 12px 0;
-  padding: 10px 12px;
-  background: $fondo;
-  border-radius: 10px;
-}
-
-.desglose-fila {
-  display: flex;
-  justify-content: space-between;
-  padding: 4px 0;
-  color: $texto-suave;
-  font-size: 14px;
-}
-
-.desglose-total {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 6px;
-  padding-top: 8px;
-  border-top: 1px dashed rgba($verde, 0.5);
-  color: $verde;
-  font-size: 18px;
-  font-weight: 700;
-
-  &.edicion-total {
-    margin: 12px 0 4px;
-  }
-}
-
-.tarjeta-foto {
-  display: block;
-  width: 100%;
-  max-height: 200px;
-  object-fit: cover;
-  border-radius: 10px;
-  border: 1px solid $morado;
-  margin: 12px 0;
-}
-
-.botones-dobles {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 10px;
-
-  ion-button { margin: 0; --border-radius: 10px; }
-}
-
-.acciones-secundarias {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 6px;
-}
-
-/* ---------- Edición ---------- */
-.zona-edicion {
-  padding: 12px;
-  border: 1px solid $verde;
-  border-radius: 10px;
-  background: $fondo;
-
-  .zona-edicion-titulo {
-    margin: 0 0 10px;
-    color: $verde;
-    font-weight: 700;
-  }
-
-  .sub-titulo {
-    margin: 14px 0 8px;
-    color: $verde;
-    font-size: 14px;
-    font-weight: 700;
-  }
-
-  .repuesto { background: $superficie; }
-}
-
-.estado-vacio {
-  text-align: center;
-  padding: 40px 16px;
-  color: $texto-suave;
-
-  ion-icon { font-size: 44px; color: $morado; }
-  p { margin: 8px 0 14px; }
-}
-
-/* =========================================================
-   VISTA PARA EL CLIENTE
-   ========================================================= */
-.overlay-cliente {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  overflow-y: auto;
-  padding: 20px 14px;
-  background: rgba($fondo, 0.96);
-}
-
-.presupuesto-oficial {
-  position: relative;
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 22px 18px 18px;
-  background: $superficie;
-  border: 2px solid $verde;
-  border-radius: 16px;
-  box-shadow: 0 0 24px rgba($verde, 0.25);
-}
-
-.cerrar-x {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-}
-
-.oficial-marca {
-  text-align: center;
-  padding-bottom: 14px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid $morado;
-
-  .marca-logo { font-size: 26px; }
-
-  p {
-    margin: 6px 0 0;
-    color: $texto;
-    font-size: 13px;
-  }
-}
-
-.oficial-servicio {
-  margin: 12px 0;
-
-  .oficial-servicio-nombre {
-    margin: 0 0 6px;
-    color: $texto;
-    font-size: 17px;
-    font-weight: 700;
-  }
-}
-
-.oficial-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 14px 0;
-  padding: 14px 16px;
-  background: $fondo;
-  border: 1px solid $verde;
-  border-radius: 12px;
-  color: $texto;
-
-  strong {
-    color: $verde;
-    font-size: 28px;
-    text-shadow: 0 0 12px rgba($verde, 0.5);
-  }
-}
-/* ===== Avisos y alertas AudioTuning ===== */
-ion-toast.toast-neon {
-  --border-radius: 12px;
-  --box-shadow: 0 0 18px rgba(0, 255, 102, 0.35);
-  font-weight: 600;
-}
-
-ion-alert.alerta-neon {
-  --background: #150933;
-
-  .alert-wrapper {
-    border: 1px solid #7b2cbf;
-    border-radius: 14px;
-    box-shadow: 0 0 20px rgba(123, 44, 191, 0.5);
-  }
-
-  .alert-title   { color: #00ff66; }
-  .alert-message { color: #d6d0e6; }
-  .alert-button  { color: #00ff66; }
-  .alert-button-role-destructive { color: #ff4961; }
-}
-
-ion-popover {
-  --background: #150933;
-
-  ion-item { --background: #150933; --color: #ffffff; }
-}
-
-/* =========================================================
-   NUEVO: botón volver, edición, ítems y sugerencias
-   ========================================================= */
-.lado-toolbar {
-  min-width: 48px;
-}
-
-.boton-volver {
-  --color: #{$texto};
-}
-
-.banner-edicion {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 14px;
-  padding: 12px 14px;
-  border: 1px solid $amarillo;
-  border-radius: 12px;
-  background: rgba($amarillo, 0.08);
-
-  .banner-titulo { margin: 0; color: $amarillo; font-weight: 700; }
-  .banner-sub    { margin: 2px 0 0; color: $texto-suave; font-size: 13px; }
-  ion-button     { margin: 0; flex-shrink: 0; }
-}
-
-.sub-bloque {
-  & + & {
-    margin-top: 16px;
-    padding-top: 14px;
-    border-top: 1px dashed rgba($morado, 0.6);
-  }
-}
-
-.sub-bloque-cabecera {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  color: $texto;
-  font-weight: 700;
-
-  span { display: inline-flex; align-items: center; gap: 6px; }
-  ion-icon { color: $verde; font-size: 18px; }
-
-  .sub-bloque-total { color: $verde; }
-}
-
-.item-linea {
-  display: grid;
-  grid-template-columns: 1fr 100px auto;
-  gap: 6px;
-  align-items: center;
-  margin-bottom: 6px;
-  padding: 2px 2px 2px 10px;
-  background: $fondo;
-  border: 1px solid rgba($morado, 0.5);
-  border-radius: 10px;
-
-  ion-input {
-    --color: #{$texto};
-    --padding-start: 2px;
-    --padding-end: 2px;
-    min-height: 42px;
-  }
-
-  .item-costo {
-    --color: #{$verde};
-    font-weight: 700;
-  }
-
-  ion-button { margin: 0; }
-}
-
-.sugerencias {
-  margin-top: 10px;
-
-  .sugerencias-titulo {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin: 0 0 6px;
-    color: $texto-suave;
-    font-size: 12px;
-  }
-}
-
-.sugerencias-lista {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.chip-sugerencia {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border: 1px solid rgba($verde, 0.5);
-  border-radius: 20px;
-  background: rgba($verde, 0.07);
-  color: $texto;
-  font-size: 13px;
-  cursor: pointer;
-
-  &:active { background: rgba($verde, 0.2); }
-
-  .chip-precio { color: $verde; font-weight: 700; }
-
-  .chip-marca {
-    padding: 1px 6px;
-    border-radius: 8px;
-    background: rgba($morado, 0.5);
-    color: $texto-suave;
-    font-size: 11px;
-  }
-}
-
-.desglose-subtitulo {
-  margin: 6px 0 2px;
-  color: $verde;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-
-  &:first-child { margin-top: 0; }
-}
-
-/* =========================================================
-   BOTÓN INSTAGRAM Y COMPARTIR
-   ========================================================= */
-.boton-instagram {
-  --background: linear-gradient(45deg, #f58529, #dd2a7b, #8134af);
-  --background-activated: linear-gradient(45deg, #d9741f, #bf1f68, #6c2a93);
-  --color: #ffffff;
-}
-
-.espacio-arriba-boton {
-  margin-top: 8px;
-}
-
-/* =========================================================
-   PANEL DE REPUESTOS GUARDADOS
-   ========================================================= */
-.guardados {
-  margin-top: 12px;
-}
-
-.guardados-aviso,
-.guardados-vacio {
-  margin: 0 0 8px;
-  color: $texto-suave;
-  font-size: 13px;
-}
-
-.guardados-grupo + .guardados-grupo {
-  margin-top: 12px;
-}
-
-.guardados-titulo {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0 0 6px;
-  color: $verde;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.guardado {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  margin-bottom: 6px;
-  padding: 10px 12px;
-  border: 1px solid rgba($verde, 0.35);
-  border-radius: 10px;
-  background: rgba($verde, 0.05);
-  color: $texto;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-
-  &:active {
-    background: rgba($verde, 0.18);
-    border-color: $verde;
-  }
-
-  .guardado-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-  }
-
-  .guardado-nombre {
-    font-size: 15px;
-    font-weight: 600;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .guardado-detalle {
-    color: $texto-suave;
-    font-size: 12px;
-  }
-
-  .guardado-precio {
-    flex-shrink: 0;
-    color: $verde;
-    font-weight: 700;
-  }
-
-  .guardado-mas {
-    flex-shrink: 0;
-    width: 28px;
-    height: 28px;
-    padding: 4px;
-    border-radius: 50%;
-    background: $verde;
-    color: $fondo;
-  }
-}
-
-.guardados-ver-mas {
-  width: 100%;
-  padding: 8px;
-  border: 1px dashed rgba($morado, 0.8);
-  border-radius: 10px;
-  background: transparent;
-  color: $texto-suave;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-/* =========================================================
-   CATEGORÍAS, TRABAJOS ANTERIORES Y ETIQUETAS
-   ========================================================= */
-
-/* Colores por categoría */
-.tag-repuesto  { --tag: #{$verde}; }
-.tag-accesorio { --tag: #{$morado-claro}; }
-.tag-otro      { --tag: #{$cian}; }
-.tag-mano-obra { --tag: #{$amarillo}; }
-
-/* Selector de categoría antes de agregar */
-.selector-categoria {
-  display: flex;
-  gap: 6px;
-  margin: 10px 0 8px;
-}
-
-.chip-categoria {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 8px 6px;
-  border: 1px solid var(--tag);
-  border-radius: 20px;
-  background: transparent;
-  color: var(--tag);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-
-  &.activo {
-    background: var(--tag);
-    color: $fondo;
-    box-shadow: 0 0 10px var(--tag);
-  }
-}
-
-/* Línea de ítem con etiqueta de categoría */
-.item-linea.con-tag {
-  grid-template-columns: auto 1fr 90px auto;
-}
-
-.item-tag,
-.chip-tipo {
-  flex-shrink: 0;
-  padding: 3px 7px;
-  border: 1px solid var(--tag);
-  border-radius: 6px;
-  background: transparent;
-  color: var(--tag);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-}
-
-.item-tag {
-  cursor: pointer;
-}
-
-/* Trabajos anteriores de la marca */
-.bloque-trabajos {
-  border-color: rgba($verde, 0.5);
-}
-
-.trabajo-previo {
-  margin-bottom: 10px;
-  padding: 12px;
-  border: 1px solid rgba($morado, 0.6);
-  border-radius: 12px;
-  background: $fondo;
-
-  &.mismo-modelo {
-    border-color: $verde;
-    box-shadow: 0 0 10px rgba($verde, 0.15);
-  }
-
-  ion-button {
-    margin: 8px 0 0;
-    --border-radius: 10px;
-  }
-}
-
-.trabajo-previo-cabecera {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.trabajo-previo-auto {
-  margin: 0;
-  color: $texto;
-  font-weight: 700;
-}
-
-.trabajo-previo-ano {
-  color: $texto-suave;
-  font-weight: 500;
-}
-
-.etiqueta-mismo {
-  display: inline-block;
-  margin-left: 6px;
-  padding: 1px 7px;
-  border-radius: 8px;
-  background: $verde;
-  color: $fondo;
-  font-size: 11px;
-  font-weight: 800;
-  vertical-align: middle;
-}
-
-.trabajo-previo-sub {
-  margin: 3px 0 0;
-  color: $texto-suave;
-  font-size: 12px;
-}
-
-.trabajo-previo-total {
-  flex-shrink: 0;
-  color: $verde;
-  font-weight: 800;
-}
-
-.trabajo-previo-items {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 10px;
-}
-
-.chip-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  max-width: 100%;
-  padding: 6px 10px;
-  border: 1px solid rgba($verde, 0.4);
-  border-radius: 18px;
-  background: rgba($verde, 0.06);
-  color: $texto;
-  font-size: 13px;
-  cursor: pointer;
-
-  .chip-item-nombre {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  strong { color: $verde; }
-
-  &:active { background: rgba($verde, 0.2); }
-
-  &.agregado {
-    opacity: 0.4;
-    cursor: default;
-    text-decoration: line-through;
-  }
-}
-
-/* Etiqueta dentro de los guardados */
-.guardado .chip-tipo {
-  align-self: center;
-}
-
-/* =========================================================
-   VISTA DEL CLIENTE A PANTALLA COMPLETA
-   ========================================================= */
-.overlay-cliente {
-  position: fixed;
-  inset: 0;
-  z-index: 2000;              // por encima del header y las pestañas
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 0 14px calc(env(safe-area-inset-bottom, 0px) + 24px);
-  background: $fondo;
-  animation: aparecer-cliente 0.2s ease-out;
-}
-
-.overlay-barra {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  max-width: 480px;
-  margin: 0 auto 12px;
-  padding: calc(env(safe-area-inset-top, 0px) + 8px) 0 8px;
-  background: $fondo;
-  border-bottom: 1px solid rgba($morado, 0.5);
-
-  .overlay-volver {
-    --color: #{$texto};
-    margin: 0;
-  }
-
-  .overlay-titulo {
-    margin-left: auto;
-    color: $texto-suave;
-    font-size: 13px;
-  }
-}
-
-@keyframes aparecer-cliente {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .overlay-cliente { animation: none; }
-}
-
-/* =========================================================
-   PESTAÑAS ABAJO
-   ========================================================= */
 .footer-total ion-toolbar.barra-tabs {
   --background: #{$fondo};
   --min-height: 58px;
@@ -1247,6 +612,277 @@ ion-popover {
 }
 
 /* =========================================================
+   HISTORIAL
+   ========================================================= */
+.resumen {
+  margin-bottom: 12px;
+  padding: 14px;
+  background: $superficie;
+  border: 1px solid rgba($verde, 0.5);
+  border-radius: 14px;
+  box-shadow: 0 0 16px rgba($verde, 0.12);
+}
+
+.resumen-titulo {
+  margin: 0 0 10px;
+  color: $verde;
+  font-weight: 700;
+
+  &::first-letter { text-transform: uppercase; }
+}
+
+.resumen-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.resumen-dato {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  background: $fondo;
+  border-radius: 10px;
+}
+
+.resumen-valor {
+  color: $texto;
+  font-size: 18px;
+  font-weight: 800;
+
+  &.verde    { color: $verde; }
+  &.amarillo { color: $amarillo; }
+}
+
+.resumen-label { color: $texto-suave; font-size: 12px; }
+
+.resumen-top {
+  margin: 10px 0 0;
+  color: $texto-suave;
+  font-size: 13px;
+
+  strong { color: $texto; }
+}
+
+.buscador {
+  --background: #{$campo};
+  --color: #{$texto};
+  --placeholder-color: #{$texto-suave};
+  --icon-color: #{$verde};
+  --border-radius: 10px;
+  padding: 0 0 6px;
+}
+
+.filtros-estado {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.chip-filtro {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba($morado, 0.8);
+  background: $superficie;
+  color: $texto-suave;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  .chip-num { margin-left: 4px; opacity: 0.7; }
+
+  &.activo {
+    color: $fondo;
+    background: $verde;
+    border-color: $verde;
+    box-shadow: 0 0 10px rgba($verde, 0.5);
+  }
+
+  &.chip-pendiente.activo  { background: $amarillo; border-color: $amarillo; box-shadow: 0 0 10px rgba($amarillo, 0.5); }
+  &.chip-en-proceso.activo { background: $morado-claro; border-color: $morado-claro; box-shadow: 0 0 10px rgba($morado-claro, 0.5); }
+  &.chip-terminado.activo  { background: $cian; border-color: $cian; box-shadow: 0 0 10px rgba($cian, 0.5); }
+}
+
+.tarjeta-trabajo {
+  margin: 0 0 14px;
+  background: $superficie;
+  border: 1px solid rgba($morado, 0.7);
+  border-radius: 14px;
+  box-shadow: none;
+}
+
+.tarjeta-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px 0;
+}
+
+.tarjeta-auto  { margin: 0; color: $verde; font-size: 20px; font-weight: 700; }
+.tarjeta-ano   { color: $texto-suave; font-size: 15px; font-weight: 500; }
+.tarjeta-fecha { margin: 2px 0 0; color: $texto-suave; font-size: 13px; }
+.tarjeta-estado { padding: 10px 16px 0; }
+
+.select-estado,
+.chip-estado {
+  display: inline-flex;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid currentColor;
+}
+
+.select-estado {
+  --padding-start: 12px;
+  --padding-end: 8px;
+  --padding-top: 4px;
+  --padding-bottom: 4px;
+  min-height: 30px;
+  width: auto;
+  max-width: 170px;
+
+  &::part(icon) { color: currentColor; opacity: 1; }
+}
+
+.chip-estado { padding: 3px 12px; }
+
+.estado-pendiente  { color: $amarillo;     background: rgba($amarillo, 0.12); }
+.estado-en-proceso { color: $morado-claro; background: rgba($morado-claro, 0.14); }
+.estado-terminado  { color: $cian;         background: rgba($cian, 0.12); }
+.estado-pagado     { color: $verde;        background: rgba($verde, 0.12); }
+
+/* Patente estilo placa chilena */
+.patente {
+  flex-shrink: 0;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: $texto;
+  color: #111;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: 2px solid #111;
+  outline: 1px solid $texto;
+}
+
+.dato {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+
+  .dato-label { color: $texto-suave; font-size: 14px; }
+  .dato-valor { color: $texto; font-weight: 600; text-align: right; }
+}
+
+.detalle {
+  margin: 6px 0;
+  padding: 8px 10px;
+  border-left: 3px solid $morado;
+  background: rgba($morado, 0.12);
+  color: $texto;
+  border-radius: 0 8px 8px 0;
+}
+
+.nota-interna {
+  margin: 8px 0;
+  padding: 8px 10px;
+  border: 1px dashed rgba($amarillo, 0.6);
+  border-radius: 8px;
+  background: rgba($amarillo, 0.07);
+
+  .nota-interna-titulo { color: $amarillo; font-size: 12px; font-weight: 700; }
+  p { margin: 4px 0 0; color: $texto; font-size: 14px; }
+}
+
+.desglose {
+  margin: 12px 0;
+  padding: 10px 12px;
+  background: $fondo;
+  border-radius: 10px;
+}
+
+.desglose-subtitulo {
+  margin: 6px 0 2px;
+  color: $verde;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+
+  &:first-child { margin-top: 0; }
+}
+
+.desglose-fila {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  color: $texto-suave;
+  font-size: 14px;
+}
+
+.desglose-total {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba($verde, 0.5);
+  color: $verde;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.tarjeta-foto {
+  display: block;
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid $morado;
+  margin: 12px 0;
+}
+
+.botones-dobles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+
+  ion-button { margin: 0; --border-radius: 10px; }
+}
+
+.boton-instagram {
+  --background: linear-gradient(45deg, #f58529, #dd2a7b, #8134af);
+  --background-activated: linear-gradient(45deg, #d9741f, #bf1f68, #6c2a93);
+  --color: #ffffff;
+}
+
+.espacio-arriba-boton { margin-top: 8px; }
+
+.acciones-secundarias {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+.estado-vacio {
+  text-align: center;
+  padding: 40px 16px;
+  color: $texto-suave;
+
+  ion-icon { font-size: 44px; color: $morado; }
+  p { margin: 8px 0 14px; }
+}
+
+/* =========================================================
    VISTA DEL CLIENTE (ventana completa)
    ========================================================= */
 ion-modal.modal-cliente {
@@ -1260,8 +896,6 @@ ion-modal.modal-cliente {
   --background: #{$fondo};
   border-bottom: 1px solid rgba($morado, 0.5);
 
-  .boton-volver { --color: #{$texto}; }
-
   .titulo-modal {
     padding-right: 14px;
     color: $texto-suave;
@@ -1269,6 +903,53 @@ ion-modal.modal-cliente {
   }
 }
 
-.contenido-modal {
-  --background: #{$fondo};
+.contenido-modal { --background: #{$fondo}; }
+
+.presupuesto-oficial {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 22px 18px 18px;
+  background: $superficie;
+  border: 2px solid $verde;
+  border-radius: 16px;
+  box-shadow: 0 0 24px rgba($verde, 0.25);
+}
+
+.oficial-marca {
+  text-align: center;
+  padding-bottom: 14px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid $morado;
+
+  .marca-logo { font-size: 26px; }
+  p { margin: 6px 0 0; color: $texto; font-size: 13px; }
+}
+
+.oficial-servicio {
+  margin: 12px 0;
+
+  .oficial-servicio-nombre {
+    margin: 0 0 6px;
+    color: $texto;
+    font-size: 17px;
+    font-weight: 700;
+  }
+}
+
+.oficial-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 14px 0;
+  padding: 14px 16px;
+  background: $fondo;
+  border: 1px solid $verde;
+  border-radius: 12px;
+  color: $texto;
+
+  strong {
+    color: $verde;
+    font-size: 28px;
+    text-shadow: 0 0 12px rgba($verde, 0.5);
+  }
 }
