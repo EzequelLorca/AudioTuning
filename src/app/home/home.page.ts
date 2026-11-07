@@ -13,17 +13,22 @@ import {
   trashOutline, logoWhatsapp, createOutline, eyeOutline, checkmarkOutline,
   personOutline, carSportOutline, constructOutline, cubeOutline, cashOutline,
   cameraOutline, addOutline, closeOutline, searchOutline, documentTextOutline,
-  arrowBackOutline, hammerOutline, timeOutline, logoInstagram, shareSocialOutline
+  arrowBackOutline, hammerOutline, timeOutline, logoInstagram, shareSocialOutline,
+  sparklesOutline, pricetagOutline
 } from 'ionicons/icons';
 import {
-  RegistroTrabajo, Repuesto, MarcaAuto, EstadoTrabajo, TipoItem, ItemCatalogo
+  RegistroTrabajo, Repuesto, MarcaAuto, EstadoTrabajo, TipoItem
 } from '../models/mecanico.model';
 
 type Errores = Record<string, string>;
 
-/** Un repuesto que ya cobraste antes, armado desde el historial */
-interface RepuestoGuardado {
+/** Los ítems se agrupan en dos secciones del formulario */
+type Grupo = 'productos' | 'mano-obra';
+
+/** Algo que ya cobraste antes, armado desde el historial */
+interface ItemGuardado {
   nombre: string;
+  tipo: TipoItem;
   costo: number;          // último precio cobrado
   veces: number;          // cuántas veces lo cobraste
   ultimaVez: number;
@@ -32,14 +37,16 @@ interface RepuestoGuardado {
   marcas: string[];       // marcas donde se usó
 }
 
-interface GrupoRepuestos {
+interface GrupoGuardados {
   titulo: string;
-  items: RepuestoGuardado[];
+  items: ItemGuardado[];
   ocultos: number;
 }
 
 /** Valor especial de los selectores para "agregar otra marca/modelo" */
 const NUEVA_OPCION = '__nueva__';
+
+const TIPOS_VALIDOS: TipoItem[] = ['repuesto', 'accesorio', 'otro', 'mano-obra'];
 
 const MARCAS_BASE: MarcaAuto[] = [
   { nombre: 'BMW', modelos: ['Serie 1', 'Serie 3', 'Serie 5', 'X1', 'X3', 'X5'] },
@@ -84,7 +91,6 @@ export class HomePage implements OnInit {
 
   private readonly CLAVE_HISTORIAL = 'historial_audiotuning';
   private readonly CLAVE_MARCAS = 'marcas_audiotuning';
-  private readonly CLAVE_CATALOGO = 'catalogo_audiotuning';
   readonly NUEVA = NUEVA_OPCION;
 
   seccion: string = 'nuevo';
@@ -98,9 +104,25 @@ export class HomePage implements OnInit {
     { valor: 'pagado', texto: 'Pagado' }
   ];
 
-  tipos: { valor: TipoItem; titulo: string; placeholder: string; icono: string }[] = [
-    { valor: 'repuesto', titulo: 'Repuestos', placeholder: 'Buscar o escribir repuesto', icono: 'cube-outline' },
-    { valor: 'mano-obra', titulo: 'Mano de obra', placeholder: 'Trabajo realizado', icono: 'hammer-outline' }
+  /** Categorías para la sección de productos */
+  categorias: { valor: TipoItem; texto: string; icono: string }[] = [
+    { valor: 'repuesto', texto: 'Repuesto', icono: 'cube-outline' },
+    { valor: 'accesorio', texto: 'Accesorio', icono: 'sparkles-outline' },
+    { valor: 'otro', texto: 'Otro', icono: 'pricetag-outline' }
+  ];
+
+  /** Las dos secciones del formulario */
+  secciones: { grupo: Grupo; titulo: string; icono: string }[] = [
+    { grupo: 'productos', titulo: 'Repuestos, accesorios y otros', icono: 'cube-outline' },
+    { grupo: 'mano-obra', titulo: 'Mano de obra', icono: 'hammer-outline' }
+  ];
+
+  /** Orden en que se muestran en el presupuesto */
+  tiposOrden: { valor: TipoItem; titulo: string; emoji: string }[] = [
+    { valor: 'repuesto', titulo: 'Repuestos', emoji: '⚙️' },
+    { valor: 'accesorio', titulo: 'Accesorios', emoji: '✨' },
+    { valor: 'otro', titulo: 'Otros', emoji: '📦' },
+    { valor: 'mano-obra', titulo: 'Mano de obra', emoji: '🛠️' }
   ];
 
   serviciosLogo: string[] = [
@@ -118,19 +140,18 @@ export class HomePage implements OnInit {
   private marcaPrevia = '';
   private modeloPrevio = '';
 
-  // --- Precios cobrados antes (mano de obra) ---
-  private catalogoPrecios: ItemCatalogo[] = [];
-
-  // --- Repuestos guardados (desde el historial) ---
-  verTodosRepuestos = false;
+  // --- Guardados (desde el historial) ---
+  verTodos: Record<Grupo, boolean> = { 'productos': false, 'mano-obra': false };
+  verTodosTrabajos = false;
   private cacheHistorial: RegistroTrabajo[] | null = null;
-  private cacheRepuestos: RepuestoGuardado[] = [];
+  private cacheGuardados: ItemGuardado[] = [];
 
   // --- Formulario (nuevo o edición) ---
   trabajoActual: RegistroTrabajo = this.inicializarTrabajo();
   errores: Errores = {};
-  nuevo: Record<TipoItem, { nombre: string; costo: number | null }> = this.nuevoVacio();
-  totalRepuestos: number = 0;
+  categoriaNueva: TipoItem = 'repuesto';
+  nuevo: Record<Grupo, { nombre: string; costo: number | null }> = this.nuevoVacio();
+  totalProductos: number = 0;
   totalManoObra: number = 0;
   totalCalculado: number = 0;
   procesandoFoto: boolean = false;
@@ -148,14 +169,14 @@ export class HomePage implements OnInit {
       trashOutline, logoWhatsapp, createOutline, eyeOutline, checkmarkOutline,
       personOutline, carSportOutline, constructOutline, cubeOutline, cashOutline,
       cameraOutline, addOutline, closeOutline, searchOutline, documentTextOutline,
-      arrowBackOutline, hammerOutline, timeOutline, logoInstagram, shareSocialOutline
+      arrowBackOutline, hammerOutline, timeOutline, logoInstagram, shareSocialOutline,
+      sparklesOutline, pricetagOutline
     });
   }
 
   ngOnInit() {
     this.cargarMarcas();
     this.cargarHistorial();
-    this.cargarCatalogo();
     this.asegurarGuardia();
   }
 
@@ -372,6 +393,7 @@ export class HomePage implements OnInit {
     this.modelosDisponibles = this.modelosDe(this.trabajoActual.marcaAuto);
     this.trabajoActual.modeloAuto = '';
     this.modeloPrevio = '';
+    this.verTodosTrabajos = false;
     this.limpiarError('marca');
   }
 
@@ -391,52 +413,111 @@ export class HomePage implements OnInit {
     this.limpiarError('modelo');
   }
 
+  marcaElegida(): boolean {
+    return !!this.trabajoActual.marcaAuto && this.trabajoActual.marcaAuto !== NUEVA_OPCION;
+  }
+
   // =========================================================
-  // REPUESTOS Y MANO DE OBRA
+  // ÍTEMS: REPUESTOS, ACCESORIOS, OTROS Y MANO DE OBRA
   // =========================================================
 
-  private nuevoVacio(): Record<TipoItem, { nombre: string; costo: number | null }> {
+  private nuevoVacio(): Record<Grupo, { nombre: string; costo: number | null }> {
     return {
-      'repuesto': { nombre: '', costo: null },
+      'productos': { nombre: '', costo: null },
       'mano-obra': { nombre: '', costo: null }
     };
   }
 
   tipoDe(item: Repuesto): TipoItem {
-    return item.tipo || 'repuesto';
+    return item.tipo && TIPOS_VALIDOS.includes(item.tipo) ? item.tipo : 'repuesto';
+  }
+
+  grupoDe(tipo: TipoItem): Grupo {
+    return tipo === 'mano-obra' ? 'mano-obra' : 'productos';
   }
 
   itemsDe(tipo: TipoItem, trabajo: RegistroTrabajo = this.trabajoActual): Repuesto[] {
     return (trabajo.repuestos || []).filter(i => this.tipoDe(i) === tipo);
   }
 
+  itemsDeGrupo(grupo: Grupo, trabajo: RegistroTrabajo = this.trabajoActual): Repuesto[] {
+    return (trabajo.repuestos || []).filter(i => this.grupoDe(this.tipoDe(i)) === grupo);
+  }
+
   totalDe(tipo: TipoItem, trabajo: RegistroTrabajo = this.trabajoActual): number {
     return this.itemsDe(tipo, trabajo).reduce((acc, i) => acc + Number(i.costo || 0), 0);
   }
 
-  agregarItem(tipo: TipoItem) {
-    const nombre = this.nuevo[tipo].nombre.trim();
-    const costo = Math.round(Number(this.nuevo[tipo].costo));
+  totalGrupo(grupo: Grupo, trabajo: RegistroTrabajo = this.trabajoActual): number {
+    return this.itemsDeGrupo(grupo, trabajo).reduce((acc, i) => acc + Number(i.costo || 0), 0);
+  }
+
+  textoCorto(tipo: TipoItem): string {
+    switch (tipo) {
+      case 'accesorio': return 'ACC';
+      case 'otro': return 'OTRO';
+      case 'mano-obra': return 'M.O.';
+      default: return 'REP';
+    }
+  }
+
+  placeholderDe(grupo: Grupo): string {
+    if (grupo === 'mano-obra') return 'Buscar o escribir trabajo';
+    const cat = this.categorias.find(c => c.valor === this.categoriaNueva);
+    return `Buscar o escribir ${cat ? cat.texto.toLowerCase() : 'repuesto'}`;
+  }
+
+  /** Cambia la categoría de un ítem ya agregado: REP → ACC → OTRO → REP */
+  siguienteCategoria(item: Repuesto) {
+    const orden: TipoItem[] = ['repuesto', 'accesorio', 'otro'];
+    const i = orden.indexOf(this.tipoDe(item));
+    item.tipo = orden[(i + 1) % orden.length];
+  }
+
+  agregarItem(grupo: Grupo) {
+    const nombre = this.nuevo[grupo].nombre.trim();
+    const costo = Math.round(Number(this.nuevo[grupo].costo));
     if (!nombre || !costo || costo <= 0) {
       this.mostrarToast('Escribe la descripción y un costo mayor a 0.', 'warning');
       return;
     }
+    const tipo: TipoItem = grupo === 'mano-obra' ? 'mano-obra' : this.categoriaNueva;
     this.trabajoActual.repuestos.push({ nombre, costo, tipo });
-    this.nuevo[tipo] = { nombre: '', costo: null };
+    this.nuevo[grupo] = { nombre: '', costo: null };
     this.calcularTotal();
   }
 
-  agregarSugerencia(s: ItemCatalogo) {
-    this.trabajoActual.repuestos.push({ nombre: s.nombre, costo: s.costo, tipo: s.tipo });
-    this.nuevo[s.tipo] = { nombre: '', costo: null };
+  /** Agrega con un toque algo que ya cobraste antes, con su último precio */
+  agregarGuardado(g: ItemGuardado) {
+    this.trabajoActual.repuestos.push({ nombre: g.nombre, costo: g.costo, tipo: g.tipo });
+    this.nuevo[this.grupoDe(g.tipo)] = { nombre: '', costo: null };
     this.calcularTotal();
   }
 
-  /** Agrega con un toque un repuesto que ya cobraste antes, con su último precio */
-  agregarGuardado(r: RepuestoGuardado) {
-    this.trabajoActual.repuestos.push({ nombre: r.nombre, costo: r.costo, tipo: 'repuesto' });
-    this.nuevo['repuesto'] = { nombre: '', costo: null };
+  yaAgregado(r: Repuesto): boolean {
+    return this.trabajoActual.repuestos.some(
+      i => this.tipoDe(i) === this.tipoDe(r) && this.mismoTexto(i.nombre, r.nombre)
+    );
+  }
+
+  /** Desde un trabajo anterior: agrega un ítem */
+  agregarDesdeTrabajo(r: Repuesto) {
+    if (this.yaAgregado(r)) return;
+    this.trabajoActual.repuestos.push({ nombre: r.nombre, costo: Number(r.costo || 0), tipo: this.tipoDe(r) });
     this.calcularTotal();
+  }
+
+  /** Desde un trabajo anterior: agrega todos sus ítems */
+  agregarTodoDe(h: RegistroTrabajo) {
+    let agregados = 0;
+    h.repuestos.forEach(r => {
+      if (!this.yaAgregado(r)) {
+        this.trabajoActual.repuestos.push({ nombre: r.nombre, costo: Number(r.costo || 0), tipo: this.tipoDe(r) });
+        agregados++;
+      }
+    });
+    this.calcularTotal();
+    this.mostrarToast(agregados > 0 ? `Se agregaron ${agregados} ítems.` : 'Ya estaban todos agregados.', agregados > 0 ? 'success' : 'warning');
   }
 
   eliminarItem(item: Repuesto) {
@@ -451,63 +532,66 @@ export class HomePage implements OnInit {
     this.calcularTotal();
   }
 
-  corregirCostoNuevo(tipo: TipoItem) {
-    const valor = this.nuevo[tipo].costo;
+  corregirCostoNuevo(grupo: Grupo) {
+    const valor = this.nuevo[grupo].costo;
     if (valor === null || (valor as any) === '') return;
     const limpio = Math.max(0, Math.round(Number(valor) || 0));
-    this.nuevo[tipo].costo = limpio > 0 ? limpio : null;
+    this.nuevo[grupo].costo = limpio > 0 ? limpio : null;
   }
 
   calcularTotal() {
-    this.totalRepuestos = this.totalDe('repuesto');
-    this.totalManoObra = this.totalDe('mano-obra');
-    this.totalCalculado = this.totalRepuestos + this.totalManoObra;
+    this.totalProductos = this.totalGrupo('productos');
+    this.totalManoObra = this.totalGrupo('mano-obra');
+    this.totalCalculado = this.totalProductos + this.totalManoObra;
     this.trabajoActual.costoManoObra = this.totalManoObra;
     this.trabajoActual.totalCobrado = this.totalCalculado;
   }
 
-  /** Mano de obra cobrada antes (botones pequeños) */
-  sugerenciasDe(tipo: TipoItem): ItemCatalogo[] {
-    const texto = this.nuevo[tipo].nombre.trim().toLowerCase();
-    const yaAgregados = this.itemsDe(tipo).map(i => (i.nombre || '').trim().toLowerCase());
-    const marca = this.trabajoActual.marcaAuto;
+  // =========================================================
+  // TRABAJOS ANTERIORES DE LA MISMA MARCA
+  // =========================================================
 
-    return this.catalogoPrecios
-      .filter(c => c.tipo === tipo)
-      .filter(c => !yaAgregados.includes(c.nombre.toLowerCase()))
-      .filter(c => !texto || c.nombre.toLowerCase().includes(texto))
-      .sort((a, b) => {
-        const marcaA = marca && this.mismoTexto(a.marca, marca) ? 1 : 0;
-        const marcaB = marca && this.mismoTexto(b.marca, marca) ? 1 : 0;
-        return (marcaB - marcaA) || (b.usos - a.usos) || (b.ultimaVez - a.ultimaVez);
-      })
-      .slice(0, 6);
+  esMismoModelo(h: RegistroTrabajo): boolean {
+    return !!this.trabajoActual.modeloAuto && this.mismoTexto(h.modeloAuto, this.trabajoActual.modeloAuto);
+  }
+
+  /** Todos los trabajos hechos a la marca elegida (primero los del mismo modelo) */
+  get trabajosMarca(): RegistroTrabajo[] {
+    if (!this.marcaElegida()) return [];
+    const marca = this.clave(this.trabajoActual.marcaAuto);
+    return this.historial
+      .filter(h => h.id !== this.editandoId && this.clave(h.marcaAuto) === marca)
+      .sort((a, b) =>
+        (Number(this.esMismoModelo(b)) - Number(this.esMismoModelo(a))) ||
+        (Number(b.id) - Number(a.id))
+      );
   }
 
   // =========================================================
-  // REPUESTOS GUARDADOS (base de datos interna = historial)
+  // ÍTEMS GUARDADOS (base de datos interna = historial)
   // =========================================================
 
-  /** Todos los repuestos que ya cobraste, con su último precio */
-  private get repuestosGuardados(): RepuestoGuardado[] {
-    if (this.cacheHistorial === this.historial) return this.cacheRepuestos;
+  /** Todo lo que ya cobraste, con su último precio */
+  private get itemsGuardados(): ItemGuardado[] {
+    if (this.cacheHistorial === this.historial) return this.cacheGuardados;
 
-    const mapa = new Map<string, RepuestoGuardado>();
+    const mapa = new Map<string, ItemGuardado>();
     // Del más antiguo al más nuevo, para quedarse con el último precio
     [...this.historial].reverse().forEach(t => {
       const momento = Number(t.id) || 0;
       const claveAuto = `${this.clave(t.marcaAuto)}|${this.clave(t.modeloAuto)}`;
       const claveMarca = this.clave(t.marcaAuto);
 
-      this.itemsDe('repuesto', t).forEach(r => {
+      (t.repuestos || []).forEach(r => {
         const nombre = (r.nombre || '').trim();
         const costo = Number(r.costo || 0);
         if (!nombre || costo <= 0) return;
 
-        const k = this.clave(nombre);
+        const tipo = this.tipoDe(r);
+        const k = `${tipo}|${this.clave(nombre)}`;
         let g = mapa.get(k);
         if (!g) {
-          g = { nombre, costo, veces: 0, ultimaVez: 0, ultimoAuto: '', autos: [], marcas: [] };
+          g = { nombre, tipo, costo, veces: 0, ultimaVez: 0, ultimoAuto: '', autos: [], marcas: [] };
           mapa.set(k, g);
         }
         g.veces++;
@@ -522,99 +606,58 @@ export class HomePage implements OnInit {
       });
     });
 
-    this.cacheRepuestos = [...mapa.values()];
+    this.cacheGuardados = [...mapa.values()];
     this.cacheHistorial = this.historial;
-    return this.cacheRepuestos;
+    return this.cacheGuardados;
   }
 
-  /** Repuestos guardados ordenados: primero los de este modelo, luego de esta marca, luego el resto */
-  get gruposRepuestos(): GrupoRepuestos[] {
-    const texto = this.clave(this.nuevo['repuesto'].nombre);
-    const yaAgregados = this.itemsDe('repuesto').map(i => this.clave(i.nombre));
-    const marca = this.clave(this.trabajoActual.marcaAuto);
-    const modelo = this.clave(this.trabajoActual.modeloAuto);
+  hayGuardados(grupo: Grupo): boolean {
+    return this.itemsGuardados.some(g => this.grupoDe(g.tipo) === grupo);
+  }
 
-    const disponibles = this.repuestosGuardados
-      .filter(r => !yaAgregados.includes(this.clave(r.nombre)))
-      .filter(r => !texto || this.clave(r.nombre).includes(texto))
+  /** Guardados ordenados: este modelo, luego esta marca, luego el resto */
+  gruposGuardados(grupo: Grupo): GrupoGuardados[] {
+    const texto = this.clave(this.nuevo[grupo].nombre);
+    const marca = this.marcaElegida() ? this.clave(this.trabajoActual.marcaAuto) : '';
+    const modelo = this.trabajoActual.modeloAuto && this.trabajoActual.modeloAuto !== NUEVA_OPCION
+      ? this.clave(this.trabajoActual.modeloAuto) : '';
+
+    const disponibles = this.itemsGuardados
+      .filter(g => this.grupoDe(g.tipo) === grupo)
+      .filter(g => !this.yaAgregado({ nombre: g.nombre, costo: g.costo, tipo: g.tipo }))
+      .filter(g => !texto || this.clave(g.nombre).includes(texto))
       .sort((a, b) => (b.veces - a.veces) || (b.ultimaVez - a.ultimaVez));
 
-    const grupos: GrupoRepuestos[] = [];
-    const usados = new Set<RepuestoGuardado>();
+    const grupos: GrupoGuardados[] = [];
+    const usados = new Set<ItemGuardado>();
 
-    if (marca && modelo && modelo !== this.clave(NUEVA_OPCION)) {
-      const items = disponibles.filter(r => r.autos.includes(`${marca}|${modelo}`));
+    if (marca && modelo) {
+      const items = disponibles.filter(g => g.autos.includes(`${marca}|${modelo}`));
       if (items.length) {
         grupos.push({ titulo: `Usados en ${this.trabajoActual.marcaAuto} ${this.trabajoActual.modeloAuto}`, items, ocultos: 0 });
         items.forEach(i => usados.add(i));
       }
     }
 
-    if (marca && marca !== this.clave(NUEVA_OPCION)) {
-      const items = disponibles.filter(r => !usados.has(r) && r.marcas.includes(marca));
+    if (marca) {
+      const items = disponibles.filter(g => !usados.has(g) && g.marcas.includes(marca));
       if (items.length) {
-        grupos.push({ titulo: `Otros de ${this.trabajoActual.marcaAuto}`, items, ocultos: 0 });
+        grupos.push({ titulo: `Usados en otros ${this.trabajoActual.marcaAuto}`, items, ocultos: 0 });
         items.forEach(i => usados.add(i));
       }
     }
 
-    const otros = disponibles.filter(r => !usados.has(r));
+    const otros = disponibles.filter(g => !usados.has(g));
     if (otros.length) {
-      const limite = this.verTodosRepuestos || texto ? otros.length : 5;
+      const limite = this.verTodos[grupo] || texto ? otros.length : 5;
       grupos.push({
-        titulo: grupos.length ? 'Otros repuestos guardados' : 'Repuestos guardados',
+        titulo: grupos.length ? 'Guardados de otras marcas' : 'Guardados',
         items: otros.slice(0, limite),
         ocultos: Math.max(0, otros.length - limite)
       });
     }
 
     return grupos;
-  }
-
-  hayRepuestosGuardados(): boolean {
-    return this.repuestosGuardados.length > 0;
-  }
-
-  // =========================================================
-  // CATÁLOGO DE PRECIOS (mano de obra cobrada antes)
-  // =========================================================
-
-  private cargarCatalogo() {
-    const data = localStorage.getItem(this.CLAVE_CATALOGO);
-    if (data) {
-      try {
-        this.catalogoPrecios = JSON.parse(data);
-        return;
-      } catch { /* si falla, se reconstruye abajo */ }
-    }
-    this.catalogoPrecios = [];
-    [...this.historial].reverse().forEach(t => this.registrarEnCatalogo(t, true, Number(t.id) || Date.now()));
-    this.guardarCatalogo();
-  }
-
-  private guardarCatalogo() {
-    try {
-      localStorage.setItem(this.CLAVE_CATALOGO, JSON.stringify(this.catalogoPrecios));
-    } catch { /* el catálogo es opcional */ }
-  }
-
-  private registrarEnCatalogo(trabajo: RegistroTrabajo, contarUso: boolean, momento: number = Date.now()) {
-    for (const item of trabajo.repuestos || []) {
-      const nombre = (item.nombre || '').trim();
-      const costo = Number(item.costo || 0);
-      if (!nombre || costo <= 0) continue;
-
-      const tipo = this.tipoDe(item);
-      const existente = this.catalogoPrecios.find(c => c.tipo === tipo && this.mismoTexto(c.nombre, nombre));
-      if (existente) {
-        existente.costo = costo;
-        existente.marca = trabajo.marcaAuto;
-        existente.ultimaVez = momento;
-        if (contarUso) existente.usos++;
-      } else {
-        this.catalogoPrecios.push({ nombre, costo, tipo, marca: trabajo.marcaAuto, usos: 1, ultimaVez: momento });
-      }
-    }
   }
 
   // =========================================================
@@ -649,7 +692,9 @@ export class HomePage implements OnInit {
     this.marcaPrevia = '';
     this.modeloPrevio = '';
     this.nuevo = this.nuevoVacio();
-    this.verTodosRepuestos = false;
+    this.categoriaNueva = 'repuesto';
+    this.verTodos = { 'productos': false, 'mano-obra': false };
+    this.verTodosTrabajos = false;
     this.errores = {};
     this.calcularTotal();
   }
@@ -665,7 +710,9 @@ export class HomePage implements OnInit {
     this.modeloPrevio = item.modeloAuto;
 
     this.nuevo = this.nuevoVacio();
-    this.verTodosRepuestos = false;
+    this.categoriaNueva = 'repuesto';
+    this.verTodos = { 'productos': false, 'mano-obra': false };
+    this.verTodosTrabajos = false;
     this.errores = {};
     this.calcularTotal();
     this.seccion = 'nuevo';
@@ -731,8 +778,8 @@ export class HomePage implements OnInit {
 
   guardarTrabajo() {
     // Si dejaste algo escrito en "agregar" con nombre y precio, se suma solo
-    (['repuesto', 'mano-obra'] as TipoItem[]).forEach(t => {
-      if (this.nuevo[t].nombre.trim() && Number(this.nuevo[t].costo) > 0) this.agregarItem(t);
+    (['productos', 'mano-obra'] as Grupo[]).forEach(g => {
+      if (this.nuevo[g].nombre.trim() && Number(this.nuevo[g].costo) > 0) this.agregarItem(g);
     });
 
     this.errores = this.validarDatos(this.trabajoActual);
@@ -762,8 +809,8 @@ export class HomePage implements OnInit {
       repuestos: items,
       estado: this.trabajoActual.estado || 'pendiente'
     };
-    datos.costoManoObra = this.totalDe('mano-obra', datos);
-    datos.totalCobrado = this.totalDe('repuesto', datos) + datos.costoManoObra;
+    datos.costoManoObra = this.totalGrupo('mano-obra', datos);
+    datos.totalCobrado = this.totalGrupo('productos', datos) + datos.costoManoObra;
 
     const anterior = this.historial;
     const indice = this.editandoId ? this.historial.findIndex(h => h.id === this.editandoId) : -1;
@@ -778,8 +825,6 @@ export class HomePage implements OnInit {
         this.historial = anterior;
         return;
       }
-      this.registrarEnCatalogo(actualizado, false);
-      this.guardarCatalogo();
       this.editandoId = null;
       this.limpiarFormulario();
       this.seccion = 'historial';
@@ -795,8 +840,6 @@ export class HomePage implements OnInit {
         this.historial = anterior;
         return;
       }
-      this.registrarEnCatalogo(nuevoRegistro, true);
-      this.guardarCatalogo();
       this.editandoId = null;
       this.limpiarFormulario();
       this.mostrarToast('Presupuesto guardado.');
@@ -824,7 +867,7 @@ export class HomePage implements OnInit {
     const items: Repuesto[] = (i.repuestos || []).map((r: any) => ({
       nombre: r.nombre,
       costo: Math.max(0, Number(r.costo || 0)),
-      tipo: r.tipo || 'repuesto'
+      tipo: TIPOS_VALIDOS.includes(r.tipo) ? r.tipo : 'repuesto'
     }));
     if (!items.some(r => r.tipo === 'mano-obra') && Number(i.costoManoObra) > 0) {
       items.push({ nombre: 'Mano de obra', costo: Number(i.costoManoObra), tipo: 'mano-obra' });
@@ -836,8 +879,8 @@ export class HomePage implements OnInit {
       instagramCliente: i.instagramCliente || '',
       repuestos: items
     };
-    registro.costoManoObra = this.totalDe('mano-obra', registro);
-    registro.totalCobrado = this.totalDe('repuesto', registro) + registro.costoManoObra;
+    registro.costoManoObra = this.totalGrupo('mano-obra', registro);
+    registro.totalCobrado = this.totalGrupo('productos', registro) + registro.costoManoObra;
     return registro;
   }
 
@@ -962,19 +1005,21 @@ export class HomePage implements OnInit {
   /** Arma el texto del presupuesto. Con negritas (*) solo para WhatsApp */
   private armarMensaje(item: RegistroTrabajo, conNegritas: boolean): string {
     const b = conNegritas ? '*' : '';
-    const lineas = (tipo: TipoItem) =>
-      this.itemsDe(tipo, item).map(r => `• ${r.nombre}: ${this.clp(r.costo)}`).join('\n');
-    const repuestosTexto = lineas('repuesto');
-    const manoObraTexto = lineas('mano-obra');
     const vehiculo = `${item.marcaAuto} ${item.modeloAuto}${item.anoAuto ? ' (' + item.anoAuto + ')' : ''}`;
+
+    const secciones = this.tiposOrden
+      .map(t => {
+        const lineas = this.itemsDe(t.valor, item).map(r => `• ${r.nombre}: ${this.clp(r.costo)}`).join('\n');
+        return lineas ? `${t.emoji} ${b}${t.titulo}:${b}\n${lineas}\n\n` : '';
+      })
+      .join('');
 
     return `🛸 ${b}AUDIOTUNING - OTRA DIMENSIÓN${b} 🛸\n\n` +
       `Estimado/a ${b}${item.nombreCliente || 'Cliente'}${b}:\n` +
       `Presupuesto para su vehículo ${b}${vehiculo}${b} (Patente: ${item.patenteCliente || 'N/A'})\n\n` +
       `🔧 ${b}Servicio:${b} ${item.servicioSeleccionado}\n` +
       (item.descripcionServicio ? `📝 ${b}Detalle:${b} ${item.descripcionServicio}\n\n` : '\n') +
-      (repuestosTexto ? `⚙️ ${b}Repuestos:${b}\n${repuestosTexto}\n\n` : '') +
-      (manoObraTexto ? `🛠️ ${b}Mano de obra:${b}\n${manoObraTexto}\n\n` : '') +
+      secciones +
       `💰 ${b}TOTAL A PAGAR: ${this.clp(item.totalCobrado)}${b}`;
   }
 
@@ -1010,8 +1055,7 @@ export class HomePage implements OnInit {
     window.open(url, '_blank');
   }
 
-  /** Instagram no deja escribir el mensaje por link: se copia y se abre el chat */
-    /** Instagram: en el celular abre el menú de compartir con el mensaje ya escrito */
+  /** Instagram: en el celular abre el menú de compartir con el mensaje ya escrito */
   async enviarInstagram(item: RegistroTrabajo) {
     const mensaje = this.armarMensaje(item, false);
     const nav: any = navigator;
@@ -1020,17 +1064,15 @@ export class HomePage implements OnInit {
     // Se copia igual, por si Instagram no lo pega solo
     const copia = this.copiarTexto(mensaje);
 
-    // En el celular: compartir SOLO texto → Instagram lo deja escrito en el chat
     if (esCelular && nav.share) {
       try {
         await nav.share({ text: mensaje });
         return;
       } catch (err: any) {
-        if (err?.name === 'AbortError') return; // el usuario cerró el menú
+        if (err?.name === 'AbortError') return;
       }
     }
 
-    // Plan B (computador o si falla): copiar y abrir Instagram
     const copiado = await copia;
     const usuario = this.limpiarInstagram(item.instagramCliente);
     const url = usuario ? `https://ig.me/m/${usuario}` : 'https://www.instagram.com/direct/inbox/';
@@ -1044,7 +1086,7 @@ export class HomePage implements OnInit {
     );
   }
 
-  /** Abre el menú de compartir del celular (Instagram, Messenger, Telegram, correo...) */
+  /** Abre el menú de compartir del celular (con foto si hay) */
   async compartir(item: RegistroTrabajo) {
     const texto = this.armarMensaje(item, false);
     const nav: any = navigator;

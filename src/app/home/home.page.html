@@ -115,6 +115,54 @@
       </ion-list>
     </section>
 
+    <!-- TRABAJOS ANTERIORES DE ESTA MARCA -->
+    <section class="bloque bloque-trabajos" *ngIf="marcaElegida()">
+      <ng-container *ngIf="trabajosMarca as lista">
+        <h2 class="bloque-titulo">
+          <ion-icon name="time-outline"></ion-icon> Trabajos hechos a {{ trabajoActual.marcaAuto }}
+          <span class="bloque-extra">{{ lista.length }}</span>
+        </h2>
+
+        <p class="texto-vacio" *ngIf="lista.length === 0">
+          Todavía no hay trabajos guardados de {{ trabajoActual.marcaAuto }}. Cuando guardes uno, aparecerá aquí.
+        </p>
+
+        <div class="trabajo-previo" *ngFor="let h of (verTodosTrabajos ? lista : lista.slice(0, 5)); trackBy: trackById"
+          [class.mismo-modelo]="esMismoModelo(h)">
+          <div class="trabajo-previo-cabecera">
+            <div>
+              <p class="trabajo-previo-auto">
+                {{ h.marcaAuto }} {{ h.modeloAuto }}
+                <span class="trabajo-previo-ano" *ngIf="h.anoAuto">({{ h.anoAuto }})</span>
+                <span class="etiqueta-mismo" *ngIf="esMismoModelo(h)">Mismo modelo</span>
+              </p>
+              <p class="trabajo-previo-sub">
+                {{ h.fecha }} · {{ h.servicioSeleccionado }}<ng-container *ngIf="h.nombreCliente"> · {{ h.nombreCliente }}</ng-container>
+              </p>
+            </div>
+            <span class="trabajo-previo-total">{{ clp(h.totalCobrado) }}</span>
+          </div>
+
+          <div class="trabajo-previo-items" *ngIf="h.repuestos.length > 0">
+            <button type="button" class="chip-item" *ngFor="let r of h.repuestos"
+              [class.agregado]="yaAgregado(r)" [disabled]="yaAgregado(r)" (click)="agregarDesdeTrabajo(r)">
+              <span class="chip-tipo" [ngClass]="'tag-' + tipoDe(r)">{{ textoCorto(tipoDe(r)) }}</span>
+              <span class="chip-item-nombre">{{ r.nombre }}</span>
+              <strong>{{ clp(r.costo) }}</strong>
+            </button>
+          </div>
+
+          <ion-button size="small" fill="outline" color="secondary" *ngIf="h.repuestos.length > 0" (click)="agregarTodoDe(h)">
+            <ion-icon name="add-outline" slot="start"></ion-icon> Agregar todo
+          </ion-button>
+        </div>
+
+        <button type="button" class="guardados-ver-mas" *ngIf="!verTodosTrabajos && lista.length > 5" (click)="verTodosTrabajos = true">
+          Ver los {{ lista.length }} trabajos
+        </button>
+      </ng-container>
+    </section>
+
     <!-- SERVICIO -->
     <section class="bloque">
       <h2 class="bloque-titulo"><ion-icon name="construct-outline"></ion-icon> Servicio</h2>
@@ -151,18 +199,22 @@
       </ion-list>
     </section>
 
-    <!-- REPUESTOS Y MANO DE OBRA -->
+    <!-- REPUESTOS, ACCESORIOS, OTROS Y MANO DE OBRA -->
     <section class="bloque">
-      <h2 class="bloque-titulo"><ion-icon name="cash-outline"></ion-icon> Repuestos y mano de obra</h2>
+      <h2 class="bloque-titulo"><ion-icon name="cash-outline"></ion-icon> Cobros</h2>
 
-      <div class="sub-bloque" *ngFor="let t of tipos">
+      <div class="sub-bloque" *ngFor="let s of secciones">
         <div class="sub-bloque-cabecera">
-          <span><ion-icon [name]="t.icono"></ion-icon> {{ t.titulo }}</span>
-          <span class="sub-bloque-total">{{ clp(totalDe(t.valor)) }}</span>
+          <span><ion-icon [name]="s.icono"></ion-icon> {{ s.titulo }}</span>
+          <span class="sub-bloque-total">{{ clp(totalGrupo(s.grupo)) }}</span>
         </div>
 
         <!-- Ítems agregados: se editan tocándolos -->
-        <div class="item-linea" *ngFor="let item of itemsDe(t.valor)">
+        <div class="item-linea" [class.con-tag]="s.grupo === 'productos'" *ngFor="let item of itemsDeGrupo(s.grupo)">
+          <button type="button" class="item-tag" *ngIf="s.grupo === 'productos'"
+            [ngClass]="'tag-' + tipoDe(item)" (click)="siguienteCategoria(item)" aria-label="Cambiar categoría">
+            {{ textoCorto(tipoDe(item)) }}
+          </button>
           <ion-input class="item-nombre" [(ngModel)]="item.nombre" aria-label="Descripción"></ion-input>
           <ion-input class="item-costo" type="number" inputmode="numeric" min="0" [(ngModel)]="item.costo"
             (ionInput)="calcularTotal()" (ionBlur)="corregirCosto(item)" aria-label="Costo"></ion-input>
@@ -170,65 +222,60 @@
             <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
           </ion-button>
         </div>
-        <p class="texto-vacio" *ngIf="itemsDe(t.valor).length === 0">Sin {{ t.titulo | lowercase }} todavía.</p>
+        <p class="texto-vacio" *ngIf="itemsDeGrupo(s.grupo).length === 0">Nada agregado todavía.</p>
 
-        <!-- Agregar uno nuevo (en repuestos también sirve para buscar) -->
+        <!-- Categoría de lo que vas a agregar (solo productos) -->
+        <div class="selector-categoria" *ngIf="s.grupo === 'productos'">
+          <button type="button" class="chip-categoria" *ngFor="let c of categorias"
+            [ngClass]="'tag-' + c.valor" [class.activo]="categoriaNueva === c.valor" (click)="categoriaNueva = c.valor">
+            <ion-icon [name]="c.icono"></ion-icon> {{ c.texto }}
+          </button>
+        </div>
+
+        <!-- Agregar uno nuevo (también sirve para buscar en lo guardado) -->
         <div class="agregar-repuesto">
           <ion-item>
-            <ion-input [(ngModel)]="nuevo[t.valor].nombre" [placeholder]="t.placeholder" aria-label="Descripción nueva"></ion-input>
+            <ion-input [(ngModel)]="nuevo[s.grupo].nombre" [placeholder]="placeholderDe(s.grupo)" aria-label="Descripción nueva"></ion-input>
           </ion-item>
           <ion-item>
-            <ion-input type="number" inputmode="numeric" min="0" [(ngModel)]="nuevo[t.valor].costo"
-              (ionBlur)="corregirCostoNuevo(t.valor)" placeholder="$ Costo" aria-label="Costo nuevo"></ion-input>
+            <ion-input type="number" inputmode="numeric" min="0" [(ngModel)]="nuevo[s.grupo].costo"
+              (ionBlur)="corregirCostoNuevo(s.grupo)" placeholder="$ Costo" aria-label="Costo nuevo"></ion-input>
           </ion-item>
-          <ion-button class="boton-agregar" color="secondary" (click)="agregarItem(t.valor)" aria-label="Agregar">
+          <ion-button class="boton-agregar" color="secondary" (click)="agregarItem(s.grupo)" aria-label="Agregar">
             <ion-icon slot="icon-only" name="add-outline"></ion-icon>
           </ion-button>
         </div>
 
-        <!-- REPUESTOS GUARDADOS: según marca y modelo -->
-        <ng-container *ngIf="t.valor === 'repuesto'">
-          <div class="guardados" *ngIf="gruposRepuestos as grupos">
+        <!-- Lo que ya cobraste antes, según marca y modelo -->
+        <div class="guardados" *ngIf="gruposGuardados(s.grupo) as grupos">
+          <p class="guardados-aviso" *ngIf="grupos.length > 0 && !trabajoActual.modeloAuto">
+            Elige marca y modelo para ver primero lo de ese auto.
+          </p>
 
-            <p class="guardados-aviso" *ngIf="grupos.length > 0 && !trabajoActual.modeloAuto">
-              Elige marca y modelo para ver primero los repuestos de ese auto.
-            </p>
+          <div class="guardados-grupo" *ngFor="let g of grupos">
+            <p class="guardados-titulo"><ion-icon name="time-outline"></ion-icon> {{ g.titulo }}</p>
 
-            <div class="guardados-grupo" *ngFor="let g of grupos">
-              <p class="guardados-titulo"><ion-icon name="time-outline"></ion-icon> {{ g.titulo }}</p>
+            <button type="button" class="guardado" *ngFor="let r of g.items" (click)="agregarGuardado(r)">
+              <span class="chip-tipo" *ngIf="s.grupo === 'productos'" [ngClass]="'tag-' + r.tipo">{{ textoCorto(r.tipo) }}</span>
+              <span class="guardado-info">
+                <span class="guardado-nombre">{{ r.nombre }}</span>
+                <span class="guardado-detalle">{{ r.ultimoAuto }} · {{ r.veces }} {{ r.veces === 1 ? 'vez' : 'veces' }}</span>
+              </span>
+              <span class="guardado-precio">{{ clp(r.costo) }}</span>
+              <ion-icon name="add-outline" class="guardado-mas"></ion-icon>
+            </button>
 
-              <button type="button" class="guardado" *ngFor="let r of g.items" (click)="agregarGuardado(r)">
-                <span class="guardado-info">
-                  <span class="guardado-nombre">{{ r.nombre }}</span>
-                  <span class="guardado-detalle">{{ r.ultimoAuto }} · {{ r.veces }} {{ r.veces === 1 ? 'vez' : 'veces' }}</span>
-                </span>
-                <span class="guardado-precio">{{ clp(r.costo) }}</span>
-                <ion-icon name="add-outline" class="guardado-mas"></ion-icon>
-              </button>
-
-              <button type="button" class="guardados-ver-mas" *ngIf="g.ocultos > 0" (click)="verTodosRepuestos = true">
-                Ver {{ g.ocultos }} más
-              </button>
-            </div>
-
-            <p class="guardados-vacio" *ngIf="grupos.length === 0 && hayRepuestosGuardados() && nuevo['repuesto'].nombre.trim()">
-              No hay repuestos guardados con ese nombre. Escribe el precio y tócalo en <strong>+</strong>.
-            </p>
-            <p class="guardados-vacio" *ngIf="!hayRepuestosGuardados()">
-              Aquí aparecerán los repuestos que ya cobraste, para agregarlos con un toque.
-            </p>
-          </div>
-        </ng-container>
-
-        <!-- MANO DE OBRA: lo cobrado antes en botones pequeños -->
-        <div class="sugerencias" *ngIf="t.valor === 'mano-obra' && sugerenciasDe(t.valor).length > 0">
-          <p class="sugerencias-titulo"><ion-icon name="time-outline"></ion-icon> Cobrado antes · toca para agregar</p>
-          <div class="sugerencias-lista">
-            <button type="button" class="chip-sugerencia" *ngFor="let s of sugerenciasDe(t.valor)" (click)="agregarSugerencia(s)">
-              <span class="chip-nombre">{{ s.nombre }}</span>
-              <span class="chip-precio">{{ clp(s.costo) }}</span>
+            <button type="button" class="guardados-ver-mas" *ngIf="g.ocultos > 0" (click)="verTodos[s.grupo] = true">
+              Ver {{ g.ocultos }} más
             </button>
           </div>
+
+          <p class="guardados-vacio" *ngIf="grupos.length === 0 && hayGuardados(s.grupo) && nuevo[s.grupo].nombre.trim()">
+            No hay nada guardado con ese nombre. Escribe el precio y tócalo en <strong>+</strong>.
+          </p>
+          <p class="guardados-vacio" *ngIf="!hayGuardados(s.grupo)">
+            Aquí aparecerá lo que ya cobraste, para agregarlo con un toque.
+          </p>
         </div>
       </div>
     </section>
@@ -346,7 +393,7 @@
         </div>
 
         <div class="desglose">
-          <ng-container *ngFor="let t of tipos">
+          <ng-container *ngFor="let t of tiposOrden">
             <ng-container *ngIf="itemsDe(t.valor, item).length > 0">
               <p class="desglose-subtitulo">{{ t.titulo }}</p>
               <div class="desglose-fila" *ngFor="let r of itemsDe(t.valor, item)">
@@ -454,7 +501,7 @@
       <img class="tarjeta-foto" *ngIf="itemClienteSeleccionado.fotoTrabajo" [src]="itemClienteSeleccionado.fotoTrabajo" alt="Foto del trabajo">
 
       <div class="desglose">
-        <ng-container *ngFor="let t of tipos">
+        <ng-container *ngFor="let t of tiposOrden">
           <ng-container *ngIf="itemsDe(t.valor, itemClienteSeleccionado).length > 0">
             <p class="desglose-subtitulo">{{ t.titulo }}</p>
             <div class="desglose-fila" *ngFor="let r of itemsDe(t.valor, itemClienteSeleccionado)">
@@ -493,7 +540,7 @@
       <div class="footer-montos">
         <span class="footer-label">{{ editandoId ? 'Nuevo total' : 'Total' }}</span>
         <strong class="footer-valor">{{ clp(totalCalculado) }}</strong>
-        <span class="footer-detalle">Repuestos {{ clp(totalRepuestos) }} + Mano de obra {{ clp(totalManoObra) }}</span>
+        <span class="footer-detalle">Repuestos y otros {{ clp(totalProductos) }} + Mano de obra {{ clp(totalManoObra) }}</span>
       </div>
       <ion-button color="success" [disabled]="procesandoFoto" (click)="guardarTrabajo()">
         {{ editandoId ? 'Guardar cambios' : 'Guardar' }}
