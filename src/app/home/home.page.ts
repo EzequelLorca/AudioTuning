@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   IonHeader, IonToolbar, IonButtons, IonContent, IonFooter,
-  IonSegment, IonSegmentButton, IonCard, IonCardContent,
-  IonItem, IonLabel, IonInput, IonTextarea, IonList,
+  IonCard, IonCardContent, IonItem, IonInput, IonTextarea, IonList,
   IonButton, IonIcon, IonSearchbar, IonSelect, IonSelectOption, IonModal,
   ToastController, AlertController
 } from '@ionic/angular';
@@ -80,9 +79,8 @@ const MARCAS_BASE: MarcaAuto[] = [
   imports: [
     CommonModule, FormsModule,
     IonHeader, IonToolbar, IonButtons, IonContent, IonFooter,
-    IonSegment, IonSegmentButton, IonCard, IonCardContent,
-    IonItem, IonLabel, IonInput, IonTextarea, IonList,
-    IonButton, IonIcon, IonSearchbar, IonSelect, IonSelectOption
+    IonCard, IonCardContent, IonItem, IonInput, IonTextarea, IonList,
+    IonButton, IonIcon, IonSearchbar, IonSelect, IonSelectOption, IonModal
   ]
 })
 export class HomePage implements OnInit {
@@ -318,6 +316,7 @@ export class HomePage implements OnInit {
 
   onCambiarSeccion() {
     if (this.seccion === 'historial') this.asegurarGuardia();
+    this.content?.scrollToTop(200);
   }
 
   // =========================================================
@@ -517,7 +516,10 @@ export class HomePage implements OnInit {
       }
     });
     this.calcularTotal();
-    this.mostrarToast(agregados > 0 ? `Se agregaron ${agregados} ítems.` : 'Ya estaban todos agregados.', agregados > 0 ? 'success' : 'warning');
+    this.mostrarToast(
+      agregados > 0 ? `Se agregaron ${agregados} ítems.` : 'Ya estaban todos agregados.',
+      agregados > 0 ? 'success' : 'warning'
+    );
   }
 
   eliminarItem(item: Repuesto) {
