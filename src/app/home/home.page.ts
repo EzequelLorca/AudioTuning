@@ -21,7 +21,7 @@ import {
 
 type Errores = Record<string, string>;
 
-/** Los ítems se agrupan en dos secciones del formulario */
+/** Los ítems se agrupan en dos secciones: productos y mano de obra */
 type Grupo = 'productos' | 'mano-obra';
 
 /** Algo que ya cobraste antes, armado desde el historial */
@@ -109,18 +109,10 @@ export class HomePage implements OnInit {
     { valor: 'otro', texto: 'Otro', icono: 'pricetag-outline' }
   ];
 
-  /** Las dos secciones del formulario */
+  /** Las dos secciones: formulario, historial, vista cliente y mensajes */
   secciones: { grupo: Grupo; titulo: string; icono: string }[] = [
     { grupo: 'productos', titulo: 'Repuestos, accesorios y otros', icono: 'cube-outline' },
     { grupo: 'mano-obra', titulo: 'Mano de obra', icono: 'hammer-outline' }
-  ];
-
-  /** Orden en que se muestran en el presupuesto */
-  tiposOrden: { valor: TipoItem; titulo: string; emoji: string }[] = [
-    { valor: 'repuesto', titulo: 'Repuestos', emoji: '⚙️' },
-    { valor: 'accesorio', titulo: 'Accesorios', emoji: '✨' },
-    { valor: 'otro', titulo: 'Otros', emoji: '📦' },
-    { valor: 'mano-obra', titulo: 'Mano de obra', emoji: '🛠️' }
   ];
 
   serviciosLogo: string[] = [
@@ -435,16 +427,8 @@ export class HomePage implements OnInit {
     return tipo === 'mano-obra' ? 'mano-obra' : 'productos';
   }
 
-  itemsDe(tipo: TipoItem, trabajo: RegistroTrabajo = this.trabajoActual): Repuesto[] {
-    return (trabajo.repuestos || []).filter(i => this.tipoDe(i) === tipo);
-  }
-
   itemsDeGrupo(grupo: Grupo, trabajo: RegistroTrabajo = this.trabajoActual): Repuesto[] {
     return (trabajo.repuestos || []).filter(i => this.grupoDe(this.tipoDe(i)) === grupo);
-  }
-
-  totalDe(tipo: TipoItem, trabajo: RegistroTrabajo = this.trabajoActual): number {
-    return this.itemsDe(tipo, trabajo).reduce((acc, i) => acc + Number(i.costo || 0), 0);
   }
 
   totalGrupo(grupo: Grupo, trabajo: RegistroTrabajo = this.trabajoActual): number {
@@ -1009,10 +993,16 @@ export class HomePage implements OnInit {
     const b = conNegritas ? '*' : '';
     const vehiculo = `${item.marcaAuto} ${item.modeloAuto}${item.anoAuto ? ' (' + item.anoAuto + ')' : ''}`;
 
-    const secciones = this.tiposOrden
-      .map(t => {
-        const lineas = this.itemsDe(t.valor, item).map(r => `• ${r.nombre}: ${this.clp(r.costo)}`).join('\n');
-        return lineas ? `${t.emoji} ${b}${t.titulo}:${b}\n${lineas}\n\n` : '';
+    const secciones = this.secciones
+      .map(s => {
+        const emoji = s.grupo === 'mano-obra' ? '🛠️' : '⚙️';
+        const lineas = this.itemsDeGrupo(s.grupo, item)
+          .map(r => {
+            const etiqueta = s.grupo === 'productos' ? `[${this.textoCorto(this.tipoDe(r))}] ` : '';
+            return `• ${etiqueta}${r.nombre}: ${this.clp(r.costo)}`;
+          })
+          .join('\n');
+        return lineas ? `${emoji} ${b}${s.titulo}:${b}\n${lineas}\n\n` : '';
       })
       .join('');
 

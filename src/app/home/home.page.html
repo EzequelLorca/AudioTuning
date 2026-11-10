@@ -187,7 +187,7 @@
       </ion-list>
     </section>
 
-    <!-- REPUESTOS, ACCESORIOS, OTROS Y MANO DE OBRA -->
+    <!-- COBROS: REPUESTOS, ACCESORIOS, OTROS Y MANO DE OBRA -->
     <section class="bloque">
       <h2 class="bloque-titulo"><ion-icon name="cash-outline"></ion-icon> Cobros</h2>
 
@@ -380,12 +380,16 @@
           <p>{{ item.notaInterna }}</p>
         </div>
 
+        <!-- Desglose: Repuestos, accesorios y otros / Mano de obra -->
         <div class="desglose">
-          <ng-container *ngFor="let t of tiposOrden">
-            <ng-container *ngIf="itemsDe(t.valor, item).length > 0">
-              <p class="desglose-subtitulo">{{ t.titulo }}</p>
-              <div class="desglose-fila" *ngFor="let r of itemsDe(t.valor, item)">
-                <span>{{ r.nombre }}</span>
+          <ng-container *ngFor="let s of secciones">
+            <ng-container *ngIf="itemsDeGrupo(s.grupo, item).length > 0">
+              <p class="desglose-subtitulo">{{ s.titulo }}</p>
+              <div class="desglose-fila" *ngFor="let r of itemsDeGrupo(s.grupo, item)">
+                <span class="desglose-nombre">
+                  <span class="chip-tipo" *ngIf="s.grupo === 'productos'" [ngClass]="'tag-' + tipoDe(r)">{{ textoCorto(tipoDe(r)) }}</span>
+                  {{ r.nombre }}
+                </span>
                 <span>{{ clp(r.costo) }}</span>
               </div>
             </ng-container>
@@ -529,12 +533,16 @@
 
         <img class="tarjeta-foto" *ngIf="c.fotoTrabajo" [src]="c.fotoTrabajo" alt="Foto del trabajo">
 
+        <!-- Desglose: Repuestos, accesorios y otros / Mano de obra -->
         <div class="desglose">
-          <ng-container *ngFor="let t of tiposOrden">
-            <ng-container *ngIf="itemsDe(t.valor, c).length > 0">
-              <p class="desglose-subtitulo">{{ t.titulo }}</p>
-              <div class="desglose-fila" *ngFor="let r of itemsDe(t.valor, c)">
-                <span>{{ r.nombre }}</span>
+          <ng-container *ngFor="let s of secciones">
+            <ng-container *ngIf="itemsDeGrupo(s.grupo, c).length > 0">
+              <p class="desglose-subtitulo">{{ s.titulo }}</p>
+              <div class="desglose-fila" *ngFor="let r of itemsDeGrupo(s.grupo, c)">
+                <span class="desglose-nombre">
+                  <span class="chip-tipo" *ngIf="s.grupo === 'productos'" [ngClass]="'tag-' + tipoDe(r)">{{ textoCorto(tipoDe(r)) }}</span>
+                  {{ r.nombre }}
+                </span>
                 <span>{{ clp(r.costo) }}</span>
               </div>
             </ng-container>

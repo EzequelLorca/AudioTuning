@@ -256,9 +256,9 @@ ion-input, ion-textarea, ion-select {
   gap: 10px;
 }
 
-.trabajo-previo-auto { margin: 0; color: $texto; font-weight: 700; }
-.trabajo-previo-ano  { color: $texto-suave; font-weight: 500; }
-.trabajo-previo-sub  { margin: 3px 0 0; color: $texto-suave; font-size: 12px; }
+.trabajo-previo-auto  { margin: 0; color: $texto; font-weight: 700; }
+.trabajo-previo-ano   { color: $texto-suave; font-weight: 500; }
+.trabajo-previo-sub   { margin: 3px 0 0; color: $texto-suave; font-size: 12px; }
 .trabajo-previo-total { flex-shrink: 0; color: $verde; font-weight: 800; }
 
 .etiqueta-mismo {
@@ -724,9 +724,9 @@ ion-input, ion-textarea, ion-select {
   padding: 14px 16px 0;
 }
 
-.tarjeta-auto  { margin: 0; color: $verde; font-size: 20px; font-weight: 700; }
-.tarjeta-ano   { color: $texto-suave; font-size: 15px; font-weight: 500; }
-.tarjeta-fecha { margin: 2px 0 0; color: $texto-suave; font-size: 13px; }
+.tarjeta-auto   { margin: 0; color: $verde; font-size: 20px; font-weight: 700; }
+.tarjeta-ano    { color: $texto-suave; font-size: 15px; font-weight: 500; }
+.tarjeta-fecha  { margin: 2px 0 0; color: $texto-suave; font-size: 13px; }
 .tarjeta-estado { padding: 10px 16px 0; }
 
 .select-estado,
@@ -811,7 +811,7 @@ ion-input, ion-textarea, ion-select {
 }
 
 .desglose-subtitulo {
-  margin: 6px 0 2px;
+  margin: 8px 0 4px;
   color: $verde;
   font-size: 12px;
   font-weight: 700;
@@ -824,9 +824,23 @@ ion-input, ion-textarea, ion-select {
 .desglose-fila {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: 10px;
   padding: 4px 0;
   color: $texto-suave;
   font-size: 14px;
+}
+
+.desglose-nombre {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+
+  .chip-tipo {
+    padding: 1px 5px;
+    font-size: 10px;
+  }
 }
 
 .desglose-total {
