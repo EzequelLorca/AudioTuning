@@ -61,6 +61,7 @@
         <div>
           <ion-item [class.campo-error]="!!errores['marca']">
             <ion-select label="Marca" labelPlacement="stacked" interface="alert"
+              cancelText="Cancelar" okText="Aceptar"
               [interfaceOptions]="{ header: 'Marca', cssClass: 'alerta-neon' }"
               [(ngModel)]="trabajoActual.marcaAuto" (ionChange)="onCambiarMarca()" placeholder="Selecciona una marca">
               <ion-select-option *ngFor="let marca of catalogoAutos" [value]="marca.nombre">{{ marca.nombre }}</ion-select-option>
@@ -73,6 +74,7 @@
         <div>
           <ion-item [class.campo-error]="!!errores['modelo']">
             <ion-select label="Modelo" labelPlacement="stacked" interface="alert"
+              cancelText="Cancelar" okText="Aceptar"
               [interfaceOptions]="{ header: 'Modelo', cssClass: 'alerta-neon' }"
               [(ngModel)]="trabajoActual.modeloAuto" (ionChange)="onCambiarModelo()"
               [disabled]="!trabajoActual.marcaAuto"
@@ -158,6 +160,7 @@
         <div>
           <ion-item [class.campo-error]="!!errores['servicio']">
             <ion-select label="Tipo de servicio" labelPlacement="stacked" interface="action-sheet"
+              cancelText="Cancelar"
               [(ngModel)]="trabajoActual.servicioSeleccionado" (ionChange)="limpiarError('servicio')" placeholder="Selecciona servicio">
               <ion-select-option *ngFor="let serv of serviciosLogo" [value]="serv">{{ serv }}</ion-select-option>
             </ion-select>

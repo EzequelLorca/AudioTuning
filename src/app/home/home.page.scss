@@ -967,3 +967,85 @@ ion-modal.modal-cliente {
     text-shadow: 0 0 12px rgba($verde, 0.5);
   }
 }
+
+/* =========================================================
+   VENTANAS AUDIOTUNING (iguales en Android y iPhone)
+   ========================================================= */
+
+/* ---- Selector de marca/modelo, eliminar y "agregar marca" ---- */
+ion-alert.alerta-neon {
+  --background: #150933;
+  --backdrop-opacity: 0.7;
+
+  .alert-wrapper {
+    background: #150933;
+    border: 1px solid #7b2cbf;
+    border-radius: 14px;
+    box-shadow: 0 0 20px rgba(123, 44, 191, 0.5);
+  }
+
+  .alert-head { border-bottom: 1px solid rgba(123, 44, 191, 0.5); }
+  .alert-title { color: #00ff66; }
+  .alert-message { color: #d6d0e6; }
+
+  .alert-radio-group { border-color: rgba(123, 44, 191, 0.5); }
+  .alert-radio-button { background: transparent; }
+
+  /* Opciones en morado, la elegida en verde */
+  .alert-radio-label { color: #c77dff; font-weight: 600; }
+  [aria-checked="true"] .alert-radio-label { color: #00ff66; }
+
+  .alert-radio-icon { border-color: #7b2cbf; }
+  [aria-checked="true"] .alert-radio-icon { border-color: #00ff66; }
+
+  /* Botones */
+  .alert-button { color: #00ff66; font-weight: 700; border-color: rgba(123, 44, 191, 0.5); }
+  .alert-button-role-cancel { color: #c77dff; }
+  .alert-button-role-destructive { color: #ff4961; }
+
+  /* Campo de texto (agregar marca/modelo) */
+  .alert-input {
+    color: #ffffff;
+    background: #221250;
+    border: 1px solid #7b2cbf;
+    border-radius: 8px;
+    padding: 10px;
+
+    &::placeholder { color: #b9b3cc; }
+  }
+}
+
+/* Círculo de selección en Android */
+ion-alert.alerta-neon.md .alert-radio-inner { background-color: #00ff66; }
+
+/* Check (✓) de selección en iPhone */
+ion-alert.alerta-neon.ios .alert-radio-inner { border-color: #00ff66; }
+
+/* ---- Lista de "Tipo de servicio" ---- */
+ion-action-sheet {
+  --background: #150933;
+  --backdrop-opacity: 0.7;
+  --button-color: #ffffff;
+  --button-background-selected: rgba(0, 255, 102, 0.12);
+  --button-color-selected: #00ff66;
+  --color: #00ff66;
+
+  .action-sheet-group { background: #150933; }
+  .action-sheet-title { color: #00ff66; }
+  .action-sheet-button { border-color: rgba(123, 44, 191, 0.4); }
+  .action-sheet-selected { color: #00ff66; font-weight: 700; }
+  .action-sheet-cancel { color: #c77dff; }
+}
+
+/* ---- Lista de "Estado" ---- */
+ion-popover {
+  --background: #150933;
+
+  ion-list, ion-item {
+    --background: #150933;
+    --color: #ffffff;
+    background: #150933;
+  }
+
+  ion-radio { --color-checked: #00ff66; }
+}
